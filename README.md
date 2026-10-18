@@ -44,6 +44,7 @@ Agent runtimes today are closed: every sandbox vendor invents private APIs for t
 
 ## Read the spec
 
+- [TRUST.md](TRUST.md) — our verifiable commitments: no phone-home, credential custody, telemetry policy, no lock-in
 - [What is MAP?](https://mixum-agent-protocol.dev) — hosted site (built from `site/`)
 - Local: `cd site && npm install && npm run dev`
 
