@@ -1,0 +1,52 @@
+---
+title: Mixum Agent Protocol
+description: >-
+  An open protocol connecting AI agents to isolated, snapshot-capable environments
+  across macOS, Windows, Linux, local and cloud.
+hero:
+  title: 'Mixum Agent Protocol'
+  tagline: 'The "world" an agent lives in, as an open protocol: tasks, time travel, mobility, windows, memory.'
+  actions:
+    - text: Read the specification
+      link: /spec/overview/
+      icon: right-arrow
+    - text: Quickstart
+      link: /quickstart/
+      icon: external
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+MCP standardized how agents talk to **tools**. MAP standardizes how agents and their
+operators talk to **environments**: run a task inside a VM or container, travel through
+time with snapshot trees, move a whole working state between machines mid-flight, watch
+and steer GUI windows from anywhere, and carry agent memory with you.
+
+Every capability is guarded by least-privilege capability tokens. Every artifact is
+content-addressed. Every semantic change is versioned and negotiated.
+
+<CardGrid stagger>
+  <Card title="Tasks with a lifecycle">
+    Submit an instruction, watch events stream in, suspend, cancel, and let the node
+    guarantee a pre-task snapshot every time.
+  </Card>
+  <Card title="Time travel, built in">
+    Every environment exposes a snapshot tree — branches, rollback, fork — git semantics
+    for machine state, hot enough to be invisible.
+  </Card>
+  <Card title="Mobility across hosts">
+    Close your laptop and keep working in the cloud; come back later. Content-addressed
+    chunk sync makes it idempotent and cheap.
+  </Card>
+  <Card title="Memory that follows the agent">
+    One normalized record schema with provider adapters for the major agent platforms.
+  </Card>
+</CardGrid>
+
+## Explore
+
+<LinkCard title="What is MAP?" href="/spec/overview/" description="Ecosystem, design principles, terminology." />
+
+<LinkCard title="Architecture & profiles" href="/spec/architecture/" description="Roles, conformance tiers, capability model." />
+
+<LinkCard title="SDKs" href="/sdk/" description="TypeScript and Rust skeletons for clients and tooling." />

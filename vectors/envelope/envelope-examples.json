@@ -1,0 +1,40 @@
+{
+  "$comment": "Envelope conformance vectors. valid: must be accepted. invalid: must be rejected with the stated code.",
+  "schema": "../schemas/envelope.schema.json",
+  "valid": [
+    {
+      "name": "minimal request",
+      "envelope": { "v": 1, "id": "01JBV7W8X5Q3M2N4P6R8T0V2W4", "op": "sys.ping", "ts": 1696400000123, "payload": {} }
+    },
+    {
+      "name": "request with seq",
+      "envelope": { "v": 1, "id": "01JBV7W8X5Q3M2N4P6R8T0V2W5", "op": "task.get", "seq": 42, "ts": 1696400000123, "payload": { "id": "01JBV9C2Q7R9S1T3U5V7W9X2Y4" } }
+    },
+    {
+      "name": "ok reply",
+      "envelope": { "v": 1, "id": "01JBV7W8X5Q3M2N4P6R8T0V2W6", "op": "task.get.ok", "replyTo": "01JBV7W8X5Q3M2N4P6R8T0V2W5", "ts": 1696400000200, "payload": { "id": "01JBV9C2Q7R9S1T3U5V7W9X2Y4", "instruction": "hello", "agent": "external/x", "state": "queued", "createdAt": 1696400000100 } }
+    },
+    {
+      "name": "err reply",
+      "envelope": { "v": 1, "id": "01JBV7W8X5Q3M2N4P6R8T0V2W7", "op": "display.input.err", "replyTo": "01JBV7W8X5Q3M2N4P6R8T0V2W8", "ts": 1696400000300, "payload": { "code": "conflict", "message": "window 7 is agent-owned" } }
+    },
+    {
+      "name": "server push event (no replyTo)",
+      "envelope": { "v": 1, "id": "01JBV7W8X5Q3M2N4P6R8T0V2W9", "op": "task.event", "ts": 1696400003400, "payload": { "taskId": "01JBV9C2Q7R9S1T3U5V7W9X2Y4", "type": "log", "data": { "line": "opening browser" }, "ts": 1696400003399 } }
+    },
+    {
+      "name": "unknown future field must be ignored",
+      "envelope": { "v": 1, "id": "01JBV7W8X5Q3M2N4P6R8T0V3A0", "op": "sys.ping", "ts": 1696400000123, "payload": {}, "futureHint": { "anything": true } }
+    }
+  ],
+  "invalid": [
+    { "name": "wrong major version", "envelope": { "v": 2, "id": "01JBV7W8X5Q3M2N4P6R8T0V3A1", "op": "sys.ping", "ts": 1696400000123, "payload": {} }, "code": "unsupported" },
+    { "name": "id is not a ULID", "envelope": { "v": 1, "id": "not-a-ulid", "op": "sys.ping", "ts": 1696400000123, "payload": {} }, "code": "bad_request" },
+    { "name": "id uses excluded Crockford letters (I,L,O,U)", "envelope": { "v": 1, "id": "01IBV7W8X5Q3M2N4P6R8T0V3AL", "op": "sys.ping", "ts": 1696400000123, "payload": {} }, "code": "bad_request" },
+    { "name": "missing ts", "envelope": { "v": 1, "id": "01JBV7W8X5Q3M2N4P6R8T0V3A2", "op": "sys.ping", "payload": {} }, "code": "bad_request" },
+    { "name": "payload null", "envelope": { "v": 1, "id": "01JBV7W8X5Q3M2N4P6R8T0V3A3", "op": "sys.ping", "ts": 1696400000123, "payload": null }, "code": "bad_request" },
+    { "name": "op not dotted", "envelope": { "v": 1, "id": "01JBV7W8X5Q3M2N4P6R8T0V3A4", "op": "ping", "ts": 1696400000123, "payload": {} }, "code": "bad_request" },
+    { "name": "unknown op must reply unsupported, not crash", "envelope": { "v": 1, "id": "01JBV7W8X5Q3M2N4P6R8T0V3A5", "op": "quantum.entangle", "ts": 1696400000123, "payload": {} }, "code": "unsupported" },
+    { "name": "err reply without code", "envelope": { "v": 1, "id": "01JBV7W8X5Q3M2N4P6R8T0V3A6", "op": "task.get.err", "replyTo": "01JBV7W8X5Q3M2N4P6R8T0V3A2", "ts": 1696400000123, "payload": { "message": "oops" } }, "code": "bad_request" }
+  ]
+}

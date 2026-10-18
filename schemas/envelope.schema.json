@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mixum-agent-protocol.dev/schemas/envelope.schema.json",
+  "title": "MAP control envelope",
+  "type": "object",
+  "required": ["v", "id", "op", "ts", "payload"],
+  "properties": {
+    "v": { "const": 1 },
+    "id": { "$ref": "#/$defs/ulid" },
+    "op": {
+      "type": "string",
+      "pattern": "^[a-z][a-zA-Z0-9]*(\\.[a-z][a-zA-Z0-9]*)(\\.ok|\\.err)?$",
+      "examples": ["task.submit", "task.submit.ok", "task.submit.err", "session.hello"]
+    },
+    "seq": { "type": "integer", "minimum": 0 },
+    "replyTo": { "$ref": "#/$defs/ulid" },
+    "ts": { "type": "integer", "minimum": 0, "description": "Unix milliseconds" },
+    "payload": { "type": "object" }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "ulid": {
+      "type": "string",
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+      "description": "Canonical 26-char Crockford base32 ULID"
+    }
+  }
+}
