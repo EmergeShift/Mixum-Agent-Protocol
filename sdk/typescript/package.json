@@ -1,0 +1,26 @@
+{
+  "name": "@mixum/map",
+  "version": "0.1.0",
+  "description": "Mixum Agent Protocol (MAP) client SDK — TypeScript",
+  "license": "Apache-2.0",
+  "repository": "github:ashreo/Mixum-Agent-Protocol",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" }
+  },
+  "files": ["dist", "README.md"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check": "tsc --noEmit",
+    "test": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
