@@ -31,12 +31,49 @@ const tree = await client.snap.tree();
 await client.snap.restore({ node: tree.head, strategy: "inplace" });
 ```
 
+### Reconnecting a session
+
+`session.resume` restores claims and subscriptions without a new handshake and
+replays buffered pushes newer than `lastSeq`; handlers registered right after
+resume receive the replay:
+
+```ts
+const client = await MapClient.connect({ url, token });
+const { sessionId, lastSeq } = client;
+
+// ... network hiccup / laptop sleep ...
+const resumed = await MapClient.resume({ url, sessionId, lastSeq });
+resumed.task.onEvent((event) => console.log("replayed or live", event));
+```
+
+### Pre-MAP 0.1.0 nodes
+
+Nodes built before MAP adopted `session.hello`/`map.v1` speak `hello`/`mixum.v1`.
+Opt into the transition dialect — no custom WebSocket shim needed:
+
+```ts
+const legacy = await MapClient.connect({ url, token, legacy: "mixum-v1" });
+```
+
+New nodes accept both dialects; the option only matters when the server is old.
+
+### Tests
+
+```bash
+npm run build
+npm run test:unit   # mock-socket wire tests (subprotocols, legacy, resume replay)
+npm run test:e2e    # needs a running node: MAP_URL=… MAP_TOKEN=… npm run test:e2e
+```
+
+`test/e2e-agentd.mjs` is the full-loop check; from a mixumOS checkout run
+`scripts/map-sdk-e2e.sh`, which builds a plain-WS agentd harness and executes it.
+
 ## What's in the skeleton
 
 - `types.ts` — wire types mirroring `schemas/*.schema.json` (envelope, token claims, task, snapshot node/manifest, memory record, bridge messages, window, VM).
 - `errors.ts` — `MapError` with the stable error-code set.
 - `ulid.ts` — canonical ULID generation (spec: envelope identifiers).
-- `client.ts` — `MapClient`: WSS connect + `session.hello`, request/reply correlation by ULID with timeouts, push-envelope dispatch, binary video-frame header parsing, typed domain helpers (`sys`, `task`, `snap`, `display`, `mem`, `vm`).
+- `client.ts` — `MapClient`: WSS connect + `session.hello`, request/reply correlation by ULID with timeouts, push-envelope dispatch, binary video-frame header parsing, typed domain helpers (`sys`, `task`, `snap`, `display`, `mem`, `vm`), `MapClient.resume` + `lastSeq`, and the `legacy: "mixum-v1"` transition dialect.
 
 ## Not yet (post-skeleton)
 
