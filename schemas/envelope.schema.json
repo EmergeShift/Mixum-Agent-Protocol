@@ -13,6 +13,10 @@
       "examples": ["task.submit", "task.submit.ok", "task.submit.err", "session.hello"]
     },
     "seq": { "type": "integer", "minimum": 0 },
+    "node": {
+      "type": "string",
+      "description": "Optional gateway routing target. Direct node connections ignore it; gateway clients set it to select an online node."
+    },
     "replyTo": { "$ref": "#/$defs/ulid" },
     "ts": { "type": "integer", "minimum": 0, "description": "Unix milliseconds" },
     "payload": { "type": "object" }
