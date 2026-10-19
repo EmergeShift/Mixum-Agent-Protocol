@@ -1,0 +1,54 @@
+{
+  "$comment": "MAP-Bridge conformance vector: a complete session transcript. 'dir': runner->agent (r2a) or agent->runner (a2r). Lines are LF-delimited JSON over stdio. Non-JSON lines from the agent are logs by definition.",
+  "schema": "../schemas/bridge-message.schema.json",
+  "env": { "MAP_TASK_ID": "01JBV9C2Q7R9S1T3U5V7W9X2Y4", "MAP_AGENT_NAME": "external/echo-agent", "MAP_BRIDGE": "1" },
+  "transcript": [
+    { "dir": "r2a", "line": { "type": "hello", "instruction": "Inspect the workspace and report file count", "params": {}, "env": { "arch": "aarch64", "kernel": "6.12.8", "workspace": "/workspace" } } },
+    { "dir": "a2r", "line": { "type": "log", "line": "listing files" } },
+    { "dir": "a2r", "line": { "type": "progress", "pct": 10, "step": "list" } },
+    { "dir": "a2r", "line": { "type": "exec", "id": "e1", "argv": ["bash", "-lc", "ls -1 | wc -l"], "timeoutMs": 30000 } },
+    { "dir": "r2a", "line": { "type": "exec.done", "id": "e1", "code": 0 } },
+    { "dir": "a2r", "line": { "type": "input.request", "id": "q1", "prompt": "Recursive count?", "choices": ["yes", "no"], "timeoutMs": 120000 } },
+    { "dir": "r2a", "line": { "type": "input.response", "id": "q1", "value": "yes" } },
+    { "dir": "a2r", "line": { "type": "exec", "id": "e2", "argv": ["bash", "-lc", "find . -type f | wc -l"] } },
+    { "dir": "r2a", "line": { "type": "exec.done", "id": "e2", "code": 0 } },
+    { "dir": "a2r", "plainLine": "counted 42 files", "$comment": "non-JSON stdout is a log by definition" },
+    { "dir": "a2r", "line": { "type": "done", "result": { "files": 42 } } }
+  ],
+  "expect": {
+    "taskState": "completed",
+    "taskEvents": [
+      { "type": "log", "data": { "line": "listing files" } },
+      { "type": "progress", "data": { "pct": 10, "step": "list" } },
+      { "type": "log", "data": { "line": "counted 42 files" } },
+      { "type": "input", "data": { "replyId": "q1", "prompt": "Recursive count?", "choices": ["yes", "no"] } }
+    ]
+  },
+  "failureCases": [
+    {
+      "$comment": "fail message wins over exit code 0",
+      "transcript": [
+        { "dir": "r2a", "line": { "type": "hello", "instruction": "x", "params": {}, "env": {} } },
+        { "dir": "a2r", "line": { "type": "fail", "error": "model offline" } }
+      ],
+      "exitCode": 0,
+      "expect": { "taskState": "failed" }
+    },
+    {
+      "$comment": "nonzero exit without fail is failure",
+      "transcript": [
+        { "dir": "r2a", "line": { "type": "hello", "instruction": "x", "params": {}, "env": {} } }
+      ],
+      "exitCode": 3,
+      "expect": { "taskState": "failed" }
+    },
+    {
+      "$comment": "second reply to the same input.request must be rejected",
+      "rule": "task.reply twice with the same replyId -> conflict"
+    },
+    {
+      "$comment": "input.request past timeoutMs surfaces to the agent as timeout",
+      "rule": "unanswered input.request expires; runner sends input.error-style timeout to the agent in a future minor; conformance for v1: agent proceeds or fails"
+    }
+  ]
+}

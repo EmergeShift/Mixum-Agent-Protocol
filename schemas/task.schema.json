@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mixum-agent-protocol.dev/schemas/task.schema.json",
+  "title": "MAP Task object and task.event",
+  "oneOf": [{ "$ref": "#/$defs/task" }, { "$ref": "#/$defs/event" }],
+  "$defs": {
+    "state": {
+      "enum": ["queued", "running", "suspended", "completed", "failed", "canceled"]
+    },
+    "task": {
+      "type": "object",
+      "required": ["id", "instruction", "agent", "state", "createdAt"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$" },
+        "instruction": { "type": "string", "minLength": 1 },
+        "agent": { "type": "string" },
+        "runner": { "type": "string" },
+        "state": { "$ref": "#/$defs/state" },
+        "preSnapNode": { "type": "string" },
+        "params": { "type": "object" },
+        "error": { "type": ["string", "null"] },
+        "createdAt": { "type": "integer" },
+        "startedAt": { "type": ["integer", "null"] },
+        "endedAt": { "type": ["integer", "null"] }
+      },
+      "additionalProperties": true
+    },
+    "snapshotPolicy": {
+      "type": "object",
+      "properties": {
+        "pre": { "enum": ["always", "never"] },
+        "kind": { "enum": ["disk", "memory", "hybrid"] },
+        "onFailure": { "enum": ["rollback", "keep"] }
+      },
+      "additionalProperties": false
+    },
+    "event": {
+      "type": "object",
+      "required": ["taskId", "type", "ts"],
+      "properties": {
+        "taskId": { "type": "string", "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$" },
+        "type": {
+          "enum": ["state", "log", "step", "progress", "error", "window", "input"]
+        },
+        "step": { "type": "string" },
+        "data": { "type": "object" },
+        "ts": { "type": "integer" }
+      },
+      "additionalProperties": true
+    }
+  }
+}
