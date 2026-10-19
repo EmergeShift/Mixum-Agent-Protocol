@@ -288,7 +288,7 @@ export class MapClient {
 
   readonly display = {
     list: () => this.request<{ windows: Window[] }>("display.list"),
-    attach: (req: { window: number; fps?: number; codec?: VideoCodec }) => {
+    attach: (req: { window: number; fps?: number; codec?: VideoCodec; quality?: number }) => {
       const p = this.request<{ window: number; codec: VideoCodec; width: number; height: number; fps: number }>(
         "display.attach",
         { ...req },

@@ -180,7 +180,7 @@ export interface Window {
   codec?: "jpeg" | "h264";
 }
 
-export type VideoCodec = "jpeg" | "h264";
+export type VideoCodec = "jpeg" | "h264" | "png";
 
 /** Video record: frame header (27 bytes) + encoded payload (display.md). */
 export interface VideoFrameHeader {
@@ -188,11 +188,22 @@ export interface VideoFrameHeader {
   width: number;
   height: number;
   size: number;
-  flags: number; // bit0 keyframe/IDR, bit1 cursor present
+  /** bit0 keyframe/IDR, bit1 cursor present, bit2 damage patch. */
+  flags: number;
   cursorX: number;
   cursorY: number;
   cursorW: number;
   cursorH: number;
+}
+
+/** Optional 20-byte damage-patch header after the video frame header. */
+export interface PatchHeader {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  /** 0 = cursor-only, 2 = PNG. */
+  format: 0 | 2;
 }
 
 export interface MemoryRecord {

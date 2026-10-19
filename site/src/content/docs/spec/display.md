@@ -29,7 +29,7 @@ MAP streams the GUI of the sandbox to any client. Each window is captured indepe
 | Op | Request | Reply |
 |---|---|---|
 | `display.list` | — | `{ windows: [Window] }` |
-| `display.attach` | `{ window, fps?, codec?: "jpeg"\|"h264" }` | `{ window, codec, width, height, fps }` — **codec is the negotiated one**, video frames follow on the binary channel |
+| `display.attach` | `{ window, fps?, codec?: "jpeg"\|"h264"\|"png", quality?: 1–100 }` | `{ window, codec, width, height, fps }` — **codec is the negotiated one**, video frames follow on the binary channel |
 | `display.detach` | `{ window }` | `{ window }` |
 | `display.windows` | — | `{ subscribed }` — pushes window add/remove/rename/codec-change events |
 | `display.input` | `{ window, type, … }` | `{ ok: true }` |
@@ -89,3 +89,33 @@ Injection into a window in `mode: "agent"` replies `conflict` — claim it first
 
 The record-framed channel between the Node and its compositor (`mixumd` ↔ `mixcomp` in mixumOS) is **private**, but its evolution follows the same additive rule as the public protocol: record types evolve incrementally, and a receiver **must ignore unknown record types** (logging/counting them is encouraged) instead of closing the connection. Framing or payload validation failures are a separate, explicit error path and may terminate the channel. This rule is a minor clarification (2026-10); it does not change any wire layout.
 
+
+## Damage patches (Experimental)
+
+`codec: "png"` negotiates a lossless, damage-based window stream for local/LAN
+viewers. The binary `video` channel keeps the 27-byte frame header; when
+`flags` bit2 is set the payload starts with a 20-byte little-endian patch
+header, followed by the encoded patch:
+
+```
+[27:31]   u32 x
+[31:35]   u32 y
+[35:39]   u32 w
+[39:43]   u32 h
+[43:47]   u32 format      0 = cursor-only (no image), 2 = PNG
+[47:...]  PNG bytes (w*h)
+```
+
+Semantics:
+
+- The first frame after attach, and any frame after a size change, is a full
+  frame (`flags` bit2 clear) with the window's complete PNG.
+- Subsequent frames carry only the bounding box of changed pixels; a frame
+  with no changes is omitted. `format: 0` updates the cursor overlay without
+  touching the image.
+- The host composites patches onto its last full frame; it must not clear or
+  resize the canvas for a patch. Patches are ordered and must not be dropped.
+- `quality` applies to lossy codecs (`jpeg`); PNG ignores it. A Node may
+  clamp or ignore it.
+- This is **Experimental** in v1: it is not part of conformance yet, and a
+  future RFC may formalize the patch header and add damage-region lists.
