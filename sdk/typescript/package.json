@@ -16,7 +16,8 @@
     "check": "tsc --noEmit",
     "test": "npm run check && npm run test:unit",
     "test:unit": "node --test test/sdk.test.mjs",
-    "test:e2e": "node test/e2e-agentd.mjs"
+    "test:e2e": "node test/e2e-agentd.mjs",
+    "test:legacy": "node test/legacy-e2e.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
