@@ -1,0 +1,18 @@
+[package]
+name = "map-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Mixum Agent Protocol (MAP) core wire types, error codes and map1. token handling"
+repository.workspace = true
+
+[features]
+default = []
+# ed25519 verification of map1. tokens (pulls ed25519-dalek)
+token-verify = ["dep:ed25519-dalek"]
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+ed25519-dalek = { version = "2", optional = true }

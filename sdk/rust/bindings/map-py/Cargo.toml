@@ -1,0 +1,19 @@
+[package]
+name = "map-py"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+description = "Python bindings for M-ART .mart snapshots"
+repository = "https://github.com/EmergeShift/Mixum-Agent-Protocol"
+
+[lib]
+name = "map_py"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+map-snapshot = { path = "../../crates/map-snapshot" }
+pyo3 = { version = "0.22", features = ["extension-module"] }
+serde_json = "1"
+
+# Standalone build: cargo build --manifest-path bindings/map-py/Cargo.toml
+[workspace]

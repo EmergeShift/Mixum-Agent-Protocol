@@ -1,23 +1,36 @@
-[package]
-name = "map-core"
+[workspace]
+resolver = "2"
+members = [
+    "crates/map-core",
+    "crates/map-snapshot",
+    "crates/map-client",
+    "crates/map-server",
+    "crates/map-cli",
+]
+# Bindings build for foreign ecosystems (Python / wasm) and are opt-in:
+#   cargo build --manifest-path bindings/map-py/Cargo.toml
+exclude = ["bindings/map-py", "bindings/map-wasm"]
+
+[workspace.package]
 version = "0.1.0"
 edition = "2021"
 license = "Apache-2.0"
-description = "Mixum Agent Protocol (MAP) core types and token handling — Rust SDK skeleton"
-repository = "https://github.com/ashreo/Mixum-Agent-Protocol"
+repository = "https://github.com/EmergeShift/Mixum-Agent-Protocol"
 
-[features]
-default = []
-# ed25519 verification of map1. tokens (pulls ed25519-dalek)
-token-verify = ["ed25519-dalek"]
-# tokio-tungstenite client skeleton
-client = ["tokio", "tokio-tungstenite", "futures-util"]
-
-[dependencies]
+[workspace.dependencies]
+map-core = { path = "crates/map-core" }
+map-snapshot = { path = "crates/map-snapshot" }
+map-client = { path = "crates/map-client" }
+map-server = { path = "crates/map-server" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 thiserror = "2"
-ed25519-dalek = { version = "2", optional = true }
-tokio = { version = "1", optional = true, features = ["rt", "net", "time"] }
-tokio-tungstenite = { version = "0.24", optional = true, features = ["rustls-tls-webpki-roots"] }
-futures-util = { version = "0.3", optional = true }
+async-trait = "0.1"
+clap = { version = "4", features = ["derive"] }
+anyhow = "1"
+sha2 = "0.10"
+rustls = { version = "0.23", default-features = false, features = ["ring", "std"] }
+walkdir = "2"
+memmap2 = "0.9"
+rkyv = { version = "0.7", features = ["alloc", "validation"] }
+tempfile = "3"
