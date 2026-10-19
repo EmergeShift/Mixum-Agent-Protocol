@@ -63,6 +63,8 @@ New nodes accept both dialects; the option only matters when the server is old.
 npm run build
 npm run test:unit   # mock-socket wire tests (subprotocols, legacy, resume replay)
 npm run test:e2e    # needs a MAP node:   MAP_URL=… MAP_TOKEN=… npm run test:e2e
+                    # full image node:    MAP_FULL_NODE=1 (allows a live compositor,
+                    #   skips the host-path agent test)
 npm run test:legacy # needs a 0.1.0 node: NODE_TLS_REJECT_UNAUTHORIZED=0 \
                     #   MAP_URL=wss://… MAP_TOKEN=mixum1.… npm run test:legacy
 ```
