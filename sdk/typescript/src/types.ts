@@ -6,6 +6,8 @@
 
 export const PROTOCOL_VERSION = 1 as const;
 export const SUBPROTOCOL = "map.v1" as const;
+/** Pre-MAP 0.1.0 nodes only negotiate this subprotocol (transition alias). */
+export const LEGACY_SUBPROTOCOL = "mixum.v1" as const;
 
 export type Ulid = string; // 26-char Crockford base32
 

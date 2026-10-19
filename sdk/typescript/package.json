@@ -14,7 +14,9 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "check": "tsc --noEmit",
-    "test": "tsc --noEmit"
+    "test": "npm run check && npm run test:unit",
+    "test:unit": "node --test test/sdk.test.mjs",
+    "test:e2e": "node test/e2e-agentd.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
