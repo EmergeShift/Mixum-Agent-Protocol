@@ -101,6 +101,7 @@ pub fn ok_envelope(reply_to: &str, op: &str, payload: Value) -> Envelope {
         op: format!("{op}.ok"),
         seq: None,
         reply_to: Some(reply_to.to_owned()),
+        node: None,
         ts: map_core::types::now_ms(),
         payload,
     }
@@ -113,6 +114,7 @@ pub fn error_envelope(reply_to: &str, op: &str, code: ErrorCode, message: &str) 
         op: format!("{op}.err"),
         seq: None,
         reply_to: Some(reply_to.to_owned()),
+        node: None,
         ts: map_core::types::now_ms(),
         payload: json!({ "code": code, "message": message }),
     }

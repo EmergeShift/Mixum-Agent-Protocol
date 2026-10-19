@@ -20,6 +20,9 @@ pub struct Envelope {
     pub seq: Option<u64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub reply_to: Option<Ulid>,
+    /// Optional gateway routing target; direct nodes ignore it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub node: Option<String>,
     /// Unix milliseconds.
     pub ts: i64,
     #[serde(default = "Value::default")]
@@ -34,6 +37,7 @@ impl Envelope {
             op: op.to_owned(),
             seq: None,
             reply_to: None,
+            node: None,
             ts: now_ms(),
             payload,
         }
