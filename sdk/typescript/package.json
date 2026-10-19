@@ -14,7 +14,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "check": "tsc --noEmit",
-    "test": "npm run check && npm run test:unit",
+    "test": "npm run build && npm run test:unit",
     "test:unit": "node --test test/sdk.test.mjs",
     "test:e2e": "node test/e2e-agentd.mjs",
     "test:legacy": "node test/legacy-e2e.mjs"
