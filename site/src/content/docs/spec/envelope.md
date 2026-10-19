@@ -16,6 +16,7 @@ Every text frame is exactly one JSON envelope, UTF-8:
   "op": "task.submit",
   "seq": 42,
   "replyTo": "01JBV7W8X5Q3M2N4P6R8T0V2W3",
+  "node": "home-mini",
   "ts": 1696400000123,
   "payload": { "instruction": "…" }
 }
@@ -28,6 +29,7 @@ Every text frame is exactly one JSON envelope, UTF-8:
 | `op` | string | Operation name, `domain.verb`. Replies use `<op>.ok` / `<op>.err` |
 | `seq` | int? | Per-connection monotonic counter (optional but recommended; used by `session.resume`) |
 | `replyTo` | string? | ULID of the request being answered |
+| `node` | string? | Optional gateway routing target. Direct node connections ignore it; gateway clients set it to select an online node |
 | `ts` | int | Unix milliseconds |
 | `payload` | object | Op-specific; never `null`, may be `{}` |
 
