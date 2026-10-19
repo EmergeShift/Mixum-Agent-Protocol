@@ -18,6 +18,8 @@ if (!url || !token) {
 }
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+// 完整镜像节点(mixcomp 在线)时跳过「无窗口/无合成器」与容器外 agent 路径的断言。
+const fullNode = process.env.MAP_FULL_NODE === "1";
 function watch(client) {
   const events = [];
   client.task.onEvent((event) => events.push(event));
@@ -48,7 +50,8 @@ async function main() {
   const info = await client.sys.info();
   assert.ok(info.profiles.includes("memory"));
   assert.ok(info.memoryProviders.includes("builtin"));
-  assert.equal(info.compositor, false);
+  if (fullNode) assert.equal(typeof info.compositor, "boolean");
+  else assert.equal(info.compositor, false);
   console.log("PASS sys.info");
 
   // 2. Task lifecycle with MAP event data shapes.
@@ -74,44 +77,50 @@ async function main() {
   assert.ok(listed.tasks.some((candidate) => candidate.id === task.id));
   console.log("PASS task lifecycle + MAP event shapes");
 
-  // 3. Human-input channel: bridge input.request -> task.event/input -> task.reply.
-  const agentDir = mkdtempSync(join(tmpdir(), "map-agent-"));
-  const agentScript = join(agentDir, "agent.sh");
-  writeFileSync(
-    agentScript,
-    `#!/bin/sh
-read hello
-printf '%s\\n' '{"type":"input.request","id":"q1","prompt":"Proceed?","choices":["yes","no"]}'
-read response
-case "$response" in
-  *'"value":"yes"'*) printf '%s\\n' '{"type":"log","line":"input-delivered"}' ;;
-  *) printf '%s\\n' '{"type":"log","line":"input-wrong"}' ;;
-esac
-printf '%s\\n' '{"type":"done"}'
-`,
-  );
-  chmodSync(agentScript, 0o755);
-  const inputTask = await client.task.submit({
-    instruction: "ask the human",
-    agent: "external",
-    params: { agentCmd: agentScript },
-  });
-  const inputEvent = await watcher.wait(
-    (event) => event.taskId === inputTask.id && event.type === "input",
-    "input event",
-  );
-  assert.equal(inputEvent.data.replyId, "q1");
-  assert.deepEqual(inputEvent.data.choices, ["yes", "no"]);
-  assert.deepEqual(await client.task.reply(inputTask.id, "q1", "yes"), { delivered: true });
-  await watcher.wait(
-    (event) => event.taskId === inputTask.id && event.type === "state" && event.data.state === "completed",
-    "input task completion",
-  );
-  assert.ok(watcher.events.some((event) => event.type === "log" && event.data.line === "input-delivered"));
-  rmSync(agentDir, { recursive: true, force: true });
-  console.log("PASS task.reply <-> input.request");
+  if (!fullNode) {
+    // 3. Human-input channel: bridge input.request -> task.event/input -> task.reply.
+    const agentDir = mkdtempSync(join(tmpdir(), "map-agent-"));
+    const agentScript = join(agentDir, "agent.sh");
+    writeFileSync(
+      agentScript,
+      `#!/bin/sh
+  read hello
+  printf '%s\\n' '{"type":"input.request","id":"q1","prompt":"Proceed?","choices":["yes","no"]}'
+  read response
+  case "$response" in
+    *'"value":"yes"'*) printf '%s\\n' '{"type":"log","line":"input-delivered"}' ;;
+    *) printf '%s\\n' '{"type":"log","line":"input-wrong"}' ;;
+  esac
+  printf '%s\\n' '{"type":"done"}'
+  `,
+    );
+    chmodSync(agentScript, 0o755);
+    const inputTask = await client.task.submit({
+      instruction: "ask the human",
+      agent: "external",
+      params: { agentCmd: agentScript },
+    });
+    const inputEvent = await watcher.wait(
+      (event) => event.taskId === inputTask.id && event.type === "input",
+      "input event",
+    );
+    assert.equal(inputEvent.data.replyId, "q1");
+    assert.deepEqual(inputEvent.data.choices, ["yes", "no"]);
+    assert.deepEqual(await client.task.reply(inputTask.id, "q1", "yes"), { delivered: true });
+    await watcher.wait(
+      (event) => event.taskId === inputTask.id && event.type === "state" && event.data.state === "completed",
+      "input task completion",
+    );
+    assert.ok(watcher.events.some((event) => event.type === "log" && event.data.line === "input-delivered"));
+    rmSync(agentDir, { recursive: true, force: true });
+    console.log("PASS task.reply <-> input.request");
 
-  // 4. Snapshot tree ops (memory backend).
+  } else {
+    // agent 可执行文件需在节点内;镜像上由 harness 场景覆盖 task.reply。
+    console.log("SKIP task.reply (full-node image: external agent path is inside the node)");
+  }
+
+  // 4. Snapshot tree ops (memory backend on the harness, directory backend on the image).
   const treeBefore = await client.snap.tree();
   const node = await client.snap.create({ kind: "disk", label: "sdk-e2e" });
   assert.equal(node.id.length, 26);
@@ -120,9 +129,11 @@ printf '%s\\n' '{"type":"done"}'
   assert.ok(treeAfter.nodes.length >= treeBefore.nodes.length);
   console.log("PASS snap.create / snap.tree");
 
-  // 5. Display enumeration (no compositor => empty list, typed reply).
-  assert.deepEqual(await client.display.list(), { windows: [] });
-  console.log("PASS display.list");
+  // 5. Display enumeration (harness: empty; full node: compositor may own windows).
+  const display = await client.display.list();
+  assert.ok(Array.isArray(display.windows));
+  if (!fullNode) assert.equal(display.windows.length, 0);
+  console.log("PASS display.list", display.windows.length, "windows");
 
   // 6. MAP-Memory.
   const providers = await client.mem.providers();
