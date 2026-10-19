@@ -18,6 +18,8 @@ export interface Envelope<P = Record<string, unknown>> {
   op: string;
   seq?: number;
   replyTo?: Ulid;
+  /** Optional gateway routing target; direct node connections ignore it. */
+  node?: string;
   ts: number; // unix ms
   payload: P;
 }
