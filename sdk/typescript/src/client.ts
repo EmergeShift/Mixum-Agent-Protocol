@@ -119,11 +119,11 @@ export class MapClient {
   }
 
   get caps(): string[] {
-    return [...this.hello.caps];
+    return [...(this.hello.caps ?? [])];
   }
 
   get profiles(): string[] {
-    return [...this.hello.profiles];
+    return [...(this.hello.profiles ?? [])];
   }
 
   /** Send a request op and await its .ok payload; .err rejects with MapError. */
