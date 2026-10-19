@@ -58,6 +58,19 @@
       "op": "snap.delete",
       "request": { "node": "01TREED02Q7R9S1T3U5V7W9X2Y" },
       "expect": { "error": "conflict", "because": "interior node (has children) — only leaves are deletable" }
+    },
+    {
+      "op": "snap.delete",
+      "request": { "node": "<head leaf of branch 'topic'>" },
+      "setup": "fork branch 'topic' from any node, then snapshot once on it (head = new leaf)",
+      "expect": {
+        "headMovesTo": "the deleted node's parent",
+        "invariants": [
+          "branch 'topic' still has a head after deleting its head leaf (head hands off to parent)",
+          "deleting a root leaf removes the branch entry with it",
+          "interior deletion remains conflict"
+        ]
+      }
     }
   ],
   "crossNode": {

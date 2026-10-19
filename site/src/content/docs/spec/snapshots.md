@@ -84,7 +84,8 @@ SnapNode {
 Notes:
 
 - `snap.create { parent }` may target any node (not just head) — used by runners for mid-task checkpoints on a specific timeline.
-- `snap.delete` only deletes **leaf** nodes; deleting an interior node is `conflict` (no dangling references, ever).
+- `snap.delete` only deletes **leaf** nodes; deleting an interior node is `conflict` (no dangling references, ever). When the deleted leaf is a branch's **head**, the head moves to the leaf's parent; if the leaf was also the branch root (no parent), the branch entry is removed with it. **A branch never loses its head through deletion.**
+- Branch **rename** is not a v1 wire op. Implementations MAY expose it as an extension; when they do, the rename MUST rewrite the `branch` attribute of every member node — otherwise an in-place restore of an old node resurrects the old branch name.
 - `snap.restore` guards: a `memory`/`hybrid` snapshot whose `kernel` or `arch` differs from the local node is rejected with `snapshot_invalid` unless `force: true`, and `force` may only bypass for the `disk` portion. Cross-kernel CRIU restore is deliberately unsupported in v1.
 
 ## Garbage collection
