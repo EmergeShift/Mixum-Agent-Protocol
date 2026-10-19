@@ -38,7 +38,7 @@ Agent runtimes today are closed: every sandbox vendor invents private APIs for t
 ├── site/            Documentation site (Astro Starlight) — the normative spec lives here
 ├── schemas/         JSON Schemas (normative machine-readable forms)
 ├── vectors/         Conformance vectors (structural, language-neutral)
-├── sdk/             SDK skeletons: sdk/typescript, sdk/rust
+├── sdk/             SDKs: sdk/typescript, sdk/rust (map-core/client/server/snapshot/cli + .mart tooling)
 └── rfcs/            Design process: RFCs and template
 ```
 

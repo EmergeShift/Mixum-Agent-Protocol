@@ -15,6 +15,14 @@ Format based on [Keep a Changelog](https://keepachangelog.com/); the protocol it
   memory record, bridge messages).
 - Structural conformance vectors (envelope, snapshot tree, bridge session).
 - SDK skeletons: `sdk/typescript`, `sdk/rust`.
+- Rust workspace for M-ART tooling (`sdk/rust`): `map-snapshot` implements the
+  `.mart` single-file snapshot (rkyv zero-copy archive, content-addressed
+  chunks, pack/open/verify/restore/diff, base-archive chunk reuse);
+  `map-client` adds WSS `session.hello` + request/reply; `map-server` adds the
+  `OpHandler`/`Router` node-side dispatch; `map-cli` ships the `mart` binary.
+  PyO3 / wasm-bindgen bindings and `spec/mart-binary-spec.md` document the
+  format. Layout note: `map-core` moved to `sdk/rust/crates/map-core`, and its
+  old `client` feature is now the separate `map-client` crate.
 - Documentation site (Astro Starlight) with English normative text and Chinese
   translations of overview and core concept pages.
 - RFC 0001: MAP v1 scope and relation to the mixumOS wire protocol.
