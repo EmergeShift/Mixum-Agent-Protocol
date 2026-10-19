@@ -177,3 +177,21 @@ fn manifest_paths_cannot_escape() {
     assert!(validate_rel_path("a/../../b").is_err());
     assert!(validate_rel_path("").is_err());
 }
+
+#[test]
+fn tampered_chunk_is_rejected_by_restore() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path().join("root");
+    write_file(&root.join("payload.bin"), &big_pattern(4096));
+    let mart = dir.path().join("snap.mart");
+    pack(&root, &mart, &PackOptions::default()).unwrap();
+    let mut bytes = fs::read(&mart).unwrap();
+    bytes[map_snapshot::HEADER_LEN as usize + 2] ^= 0xff;
+    fs::write(&mart, &bytes).unwrap();
+    let archive = MartArchive::open(&mart).unwrap();
+    assert!(archive.verify().is_err());
+    assert!(
+        archive.restore(dir.path().join("out")).is_err(),
+        "restore 必须默认校验 chunk"
+    );
+}

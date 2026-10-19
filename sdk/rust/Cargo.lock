@@ -515,7 +515,9 @@ version = "0.1.0"
 dependencies = [
  "futures-util",
  "map-core",
+ "rustls",
  "serde_json",
+ "sha2",
  "thiserror 2.0.21",
  "tokio",
  "tokio-tungstenite",
@@ -545,6 +547,7 @@ dependencies = [
 name = "map-snapshot"
 version = "0.1.0"
 dependencies = [
+ "libc",
  "map-core",
  "memmap2",
  "rkyv",
@@ -780,6 +783,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "48e13bd8c0e9365c43cfa5c9e8f9ad49d3c8444926c9aac819e0e4dc503c8fdf"
 dependencies = [
  "once_cell",
+ "ring",
  "rustls-pki-types",
  "rustls-webpki",
  "subtle",

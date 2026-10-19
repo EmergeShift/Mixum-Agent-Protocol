@@ -8,10 +8,14 @@
 
 use futures_util::{SinkExt, StreamExt};
 use map_core::{Envelope, ErrorCode, HelloOk, MapError};
+use std::sync::Arc;
 use std::time::Duration;
 use tokio::net::TcpStream;
+use tokio_tungstenite::tungstenite::client::IntoClientRequest;
 use tokio_tungstenite::tungstenite::Message;
-use tokio_tungstenite::{connect_async, MaybeTlsStream, WebSocketStream};
+use tokio_tungstenite::{
+    connect_async_tls_with_config, Connector, MaybeTlsStream, WebSocketStream,
+};
 
 pub const DEFAULT_TIMEOUT: Duration = Duration::from_secs(30);
 
@@ -26,7 +30,32 @@ impl MapClient {
         token: &str,
         client_name: &str,
     ) -> Result<(Self, HelloOk), MapError> {
-        let (mut ws, _response) = connect_async(url)
+        Self::connect_with_fingerprint(url, token, client_name, None).await
+    }
+
+    /// 自签节点:传 `fingerprint`(证书 SHA-256,大小写/冒号不敏感)固定身份。
+    /// `None` 时走系统 WebPKI 根(仅适用于受信证书)。
+    pub async fn connect_with_fingerprint(
+        url: &str,
+        token: &str,
+        client_name: &str,
+        fingerprint: Option<&str>,
+    ) -> Result<(Self, HelloOk), MapError> {
+        install_crypto_provider();
+        let request = url
+            .into_client_request()
+            .map_err(|e| MapError::Transport(e.to_string()))?;
+        let connector = fingerprint.map(|expected| {
+            let config =
+                rustls::ClientConfig::builder_with_protocol_versions(&[&rustls::version::TLS13])
+                    .dangerous()
+                    .with_custom_certificate_verifier(Arc::new(PinnedVerifier {
+                        expected: normalize_fingerprint(expected),
+                    }))
+                    .with_no_client_auth();
+            Connector::Rustls(Arc::new(config))
+        });
+        let (mut ws, _response) = connect_async_tls_with_config(request, None, false, connector)
             .await
             .map_err(|e| MapError::Transport(e.to_string()))?;
         let hello = Envelope::request(
@@ -130,5 +159,72 @@ async fn wait_for(
             return Ok(envelope);
         }
         // Not our reply: an event or a reply to another request. Skipped.
+    }
+}
+
+fn install_crypto_provider() {
+    let _ = rustls::crypto::ring::default_provider().install_default();
+}
+
+fn normalize_fingerprint(value: &str) -> String {
+    value
+        .chars()
+        .filter(|c| c.is_ascii_hexdigit())
+        .collect::<String>()
+        .to_ascii_uppercase()
+}
+
+#[derive(Debug)]
+struct PinnedVerifier {
+    expected: String,
+}
+
+impl rustls::client::danger::ServerCertVerifier for PinnedVerifier {
+    fn verify_server_cert(
+        &self,
+        end_entity: &rustls::pki_types::CertificateDer<'_>,
+        _intermediates: &[rustls::pki_types::CertificateDer<'_>],
+        _server_name: &rustls::pki_types::ServerName<'_>,
+        _ocsp_response: &[u8],
+        _now: rustls::pki_types::UnixTime,
+    ) -> Result<rustls::client::danger::ServerCertVerified, rustls::Error> {
+        use sha2::{Digest, Sha256};
+        let fingerprint = Sha256::digest(end_entity.as_ref())
+            .iter()
+            .map(|b| format!("{b:02X}"))
+            .collect::<String>();
+        if fingerprint == self.expected {
+            Ok(rustls::client::danger::ServerCertVerified::assertion())
+        } else {
+            Err(rustls::Error::General(format!(
+                "node certificate fingerprint mismatch: got {fingerprint}"
+            )))
+        }
+    }
+
+    fn verify_tls12_signature(
+        &self,
+        _message: &[u8],
+        _cert: &rustls::pki_types::CertificateDer<'_>,
+        _dss: &rustls::DigitallySignedStruct,
+    ) -> Result<rustls::client::danger::HandshakeSignatureValid, rustls::Error> {
+        Ok(rustls::client::danger::HandshakeSignatureValid::assertion())
+    }
+
+    fn verify_tls13_signature(
+        &self,
+        _message: &[u8],
+        _cert: &rustls::pki_types::CertificateDer<'_>,
+        _dss: &rustls::DigitallySignedStruct,
+    ) -> Result<rustls::client::danger::HandshakeSignatureValid, rustls::Error> {
+        Ok(rustls::client::danger::HandshakeSignatureValid::assertion())
+    }
+
+    fn supported_verify_schemes(&self) -> Vec<rustls::SignatureScheme> {
+        vec![
+            rustls::SignatureScheme::RSA_PKCS1_SHA256,
+            rustls::SignatureScheme::ECDSA_NISTP256_SHA256,
+            rustls::SignatureScheme::ED25519,
+        ]
     }
 }

@@ -13,6 +13,8 @@ thiserror.workspace = true
 tokio = { version = "1", features = ["rt", "net", "time"] }
 tokio-tungstenite = { version = "0.24", features = ["connect", "rustls-tls-webpki-roots"] }
 futures-util = "0.3"
+rustls.workspace = true
+sha2.workspace = true
 
 [dev-dependencies]
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
