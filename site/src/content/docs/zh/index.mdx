@@ -1,0 +1,44 @@
+---
+title: Mixum Agent Protocol
+description: >-
+  开放协议：把 AI agent 连接到可隔离、可快照的计算环境——覆盖 macOS、Windows、Linux、本地与云端。
+hero:
+  title: 'Mixum Agent Protocol'
+  tagline: 'agent 所生活的「世界」，作为一个开放协议：任务、时间旅行、跨机流转、窗口、记忆。'
+  actions:
+    - text: 阅读规范
+      link: /spec/overview/
+      icon: right-arrow
+    - text: 快速上手
+      link: /quickstart/
+      icon: external
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+MCP 标准化了 agent 与**工具**的对话方式。MAP 标准化的是 agent 与其操作者同**环境**的对话方式：在 VM 或容器里执行任务、用快照树进行时间旅行、把整个工作状态在机器间随时搬走、从任何设备观看并接管 GUI 窗口、以及让 agent 记忆跟着人走。
+
+每项能力都由最小权限能力令牌守卫；所有产物按内容寻址；每次语义变更都有版本协商。
+
+<CardGrid stagger>
+  <Card title="有生命周期的任务">
+    提交指令、实时看事件流、挂起、取消——节点保证每次任务前都打好前置快照。
+  </Card>
+  <Card title="内建的时间旅行">
+    每个环境暴露一棵快照树——分支、回退、分叉——机器状态的 git 语义，热到无感。
+  </Card>
+  <Card title="跨宿主流转">
+    合上笔记本去云端继续干，回来再合体。内容寻址的块同步让它幂等且廉价。
+  </Card>
+  <Card title="跟着 agent 走的记忆">
+    一套归一化的记录 schema，配上主流 agent 平台的导入适配器。
+  </Card>
+</CardGrid>
+
+## 开始探索
+
+<LinkCard title="什么是 MAP？" href="/zh/spec/overview/" description="生态、设计原则、术语表。" />
+
+<LinkCard title="架构与一致性分级" href="/zh/spec/architecture/" description="角色、Profile、能力模型。" />
+
+<LinkCard title="记忆（Memory）" href="/zh/spec/memory/" description="可移植的 agent 记忆：记录、provider、导入导出。" />

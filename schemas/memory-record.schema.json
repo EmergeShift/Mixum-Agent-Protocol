@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mixum-agent-protocol.dev/schemas/memory-record.schema.json",
+  "title": "MAP memory record (MAP-Memory)",
+  "type": "object",
+  "required": ["provider", "kind", "content", "scope", "createdAt", "updatedAt"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$" },
+    "provider": { "type": "string", "minLength": 1 },
+    "kind": { "enum": ["fact", "preference", "procedure", "episodic", "custom"] },
+    "content": {
+      "type": "object",
+      "required": ["text"],
+      "properties": {
+        "text": { "type": "string", "minLength": 1 },
+        "structured": { "type": "object" }
+      },
+      "additionalProperties": false
+    },
+    "scope": {
+      "type": "object",
+      "required": ["level"],
+      "properties": {
+        "level": { "enum": ["global", "project", "task"] },
+        "ref": { "type": "string", "description": "Project root path or task ULID when level != global" }
+      },
+      "additionalProperties": false
+    },
+    "source": {
+      "type": "object",
+      "properties": {
+        "platform": { "type": "string" },
+        "origin": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "tags": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+    "createdAt": { "type": "integer" },
+    "updatedAt": { "type": "integer" },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "expiresAt": { "type": ["integer", "null"] },
+    "opaque": { "type": ["string", "null"], "contentEncoding": "base64", "description": "Provider-specific blob; preserved on round-trip" }
+  },
+  "additionalProperties": true
+}

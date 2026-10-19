@@ -1,0 +1,105 @@
+{
+  "$comment": "Snapshot tree semantics vectors. A conformant Node executing the op sequence must produce the stated tree invariants. ULIDs are illustrative.",
+  "scenario": "20:00 snapshot n2; 22:00 snapshot n3; 22:30 restore n2 inplace and work; 23:00 fork from n3",
+  "initial": {
+    "branch": "main",
+    "head": "01TREED02Q7R9S1T3U5V7W9X2Y",
+    "nodes": [
+      { "id": "01TREED00Q7R9S1T3U5V7W9X2Y", "parent": null, "branch": "main", "label": "genesis", "kind": "disk" },
+      { "id": "01TREED01Q7R9S1T3U5V7W9X2Y", "parent": "01TREED00Q7R9S1T3U5V7W9X2Y", "branch": "main", "kind": "disk" },
+      { "id": "01TREED02Q7R9S1T3U5V7W9X2Y", "parent": "01TREED01Q7R9S1T3U5V7W9X2Y", "branch": "main", "kind": "disk", "label": "pre-task" }
+    ]
+  },
+  "ops": [
+    {
+      "op": "snap.create",
+      "request": { "kind": "disk", "auto": true },
+      "expect": { "newNodeParent": "01TREED02Q7R9S1T3U5V7W9X2Y", "branch": "main", "headMovesTo": "new" }
+    },
+    {
+      "op": "snap.restore",
+      "request": { "node": "01TREED02Q7R9S1T3U5V7W9X2Y", "strategy": "inplace" },
+      "expect": {
+        "headMovesTo": "01TREED02Q7R9S1T3U5V7W9X2Y",
+        "invariants": [
+          "the node created in the previous op is NOT deleted",
+          "it remains a child of 01TREED02… on branch main",
+          "workspace now materializes the state of 01TREED02…"
+        ]
+      }
+    },
+    {
+      "op": "snap.create",
+      "request": { "kind": "disk", "label": "after-rollback" },
+      "expect": {
+        "newNodeParent": "01TREED02Q7R9S1T3U5V7W9X2Y",
+        "invariants": [
+          "main now has two children under 01TREED02… (parallel timeline)",
+          "head is the new node"
+        ]
+      }
+    },
+    {
+      "op": "snap.fork",
+      "request": { "node": "01TREED03Q7R9S1T3U5V7W9X2Y", "branch": "aggressive-tuning" },
+      "expect": { "branch": "aggressive-tuning", "headMovesTo": "01TREED03Q7R9S1T3U5V7W9X2Y", "workspaceUntouched": true }
+    },
+    {
+      "op": "snap.fork",
+      "request": { "node": "01TREED03Q7R9S1T3U5V7W9X2Y", "branch": "aggressive-tuning" },
+      "expect": { "branch": "aggressive-tuning-2", "autoNumbering": true }
+    },
+    {
+      "op": "snap.restore",
+      "request": { "node": "01TREED02Q7R9S1T3U5V7W9X2Y", "strategy": "fork", "label": "from-n2" },
+      "expect": { "branch": "from-n2", "headMovesTo": "01TREED02Q7R9S1T3U5V7W9X2Y" }
+    },
+    {
+      "op": "snap.delete",
+      "request": { "node": "01TREED02Q7R9S1T3U5V7W9X2Y" },
+      "expect": { "error": "conflict", "because": "interior node (has children) — only leaves are deletable" }
+    },
+    {
+      "op": "snap.delete",
+      "request": { "node": "<head leaf of branch 'topic'>" },
+      "setup": "fork branch 'topic' from any node, then snapshot once on it (head = new leaf)",
+      "expect": {
+        "headMovesTo": "the deleted node's parent",
+        "invariants": [
+          "branch 'topic' still has a head after deleting its head leaf (head hands off to parent)",
+          "deleting a root leaf removes the branch entry with it",
+          "interior deletion remains conflict"
+        ]
+      }
+    }
+  ],
+  "crossNode": {
+    "$comment": "Push semantics (see mobility.md): importing a node whose parent is missing creates a remote root.",
+    "ops": [
+      {
+        "op": "snap.push.import",
+        "request": {
+          "node": { "id": "01TREED04Q7R9S1T3U5V7W9X2Y", "parent": "01TREED03Q7R9S1T3U5V7W9X2Y", "branch": "aggressive-tuning", "kind": "disk", "arch": "aarch64", "kernel": "6.12.8" },
+          "chunks": []
+        },
+        "targetHasParent": false,
+        "expect": {
+          "stored": true,
+          "branch": "aggressive-tuning",
+          "originRecorded": true,
+          "labelSuffix": "(remote root)",
+          "invariants": ["no cross-tree dangling parent", "second identical push transfers zero bytes"]
+        }
+      },
+      {
+        "op": "snap.restore",
+        "request": { "node": "01TREED04Q7R9S1T3U5V7W9X2Y", "strategy": "inplace" },
+        "targetArch": "x86_64",
+        "expect": {
+          "code": "snapshot_invalid",
+          "because": "disk snapshot arch mismatch is allowed only with force: true; memory/hybrid restore is rejected on arch/kernel mismatch outright"
+        }
+      }
+    ]
+  }
+}
