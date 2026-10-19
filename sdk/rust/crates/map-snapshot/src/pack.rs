@@ -61,6 +61,8 @@ struct ArchiveIndex {
 impl ArchiveIndex {
     fn open(path: &Path) -> Result<Self> {
         let archive = MartArchive::open(path)?;
+        // base 的 chunk 区不在 archive 摘要内；复用前先验每个 chunk。
+        archive.verify()?;
         let mut by_hash = HashMap::new();
         {
             let manifest = archive.manifest();

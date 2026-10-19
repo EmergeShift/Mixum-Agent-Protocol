@@ -125,6 +125,29 @@ fn base_archive_reuses_unchanged_chunks() {
         .any(|entry| entry.path == "data.bin"));
 }
 
+#[cfg(unix)]
+#[test]
+fn restore_refuses_preexisting_dest_symlink() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path().join("root");
+    write_file(&root.join("a/pwn"), b"outside");
+    let mart = dir.path().join("snap.mart");
+    pack(&root, &mart, &PackOptions::default()).unwrap();
+
+    let outside = dir.path().join("outside");
+    fs::create_dir_all(&outside).unwrap();
+    let dest = dir.path().join("dest");
+    fs::create_dir_all(&dest).unwrap();
+    std::os::unix::fs::symlink(&outside, dest.join("a")).unwrap();
+
+    let archive = MartArchive::open(&mart).unwrap();
+    assert!(archive.restore(&dest).is_err());
+    assert!(
+        !outside.join("pwn").exists(),
+        "must not write through dest symlink"
+    );
+}
+
 #[test]
 fn damage_is_detected_by_verify() {
     let dir = tempfile::tempdir().unwrap();
