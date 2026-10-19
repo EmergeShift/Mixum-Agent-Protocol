@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mixum-agent-protocol.dev/schemas/snapshot-manifest.schema.json",
+  "title": "MAP snapshot manifest",
+  "type": "object",
+  "required": ["version", "files", "dirs"],
+  "properties": {
+    "version": { "const": 1 },
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "mode", "size", "chunks"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "not": { "anyOf": [{ "pattern": "^/" }, { "pattern": "(^|/)\\.\\.($|/)" }] },
+            "description": "Relative; no absolute paths, no .. traversal"
+          },
+          "mode": { "type": "integer", "minimum": 0, "maximum": 511, "description": "Octal permission as integer (420 = 0644)" },
+          "size": { "type": "integer", "minimum": 0 },
+          "symlink": { "type": "string" },
+          "chunks": {
+            "type": "array",
+            "items": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+            "description": "Plaintext SHA-256 per chunk"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "dirs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "mode"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "not": { "anyOf": [{ "pattern": "^/" }, { "pattern": "(^|/)\\.\\.($|/)" }] }
+          },
+          "mode": { "type": "integer", "minimum": 0, "maximum": 511 }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": true
+}

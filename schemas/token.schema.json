@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mixum-agent-protocol.dev/schemas/token.schema.json",
+  "title": "MAP capability token claims (map1.)",
+  "type": "object",
+  "required": ["sub", "caps", "iat", "exp"],
+  "properties": {
+    "sub": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "caps": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "task.run", "task.observe", "snap.manage", "snap.sync",
+          "display.view", "display.input", "mem.read", "mem.write",
+          "vm.manage", "admin"
+        ]
+      },
+      "uniqueItems": true,
+      "minItems": 1
+    },
+    "iat": { "type": "integer", "description": "Unix seconds" },
+    "exp": { "type": "integer", "description": "Unix seconds" },
+    "jti": { "type": "string", "description": "Reserved for revocation lists" },
+    "taskId": { "type": "string", "$ref": "envelope.schema.json#/$defs/ulid" },
+    "windows": {
+      "type": "array", "items": { "type": "integer", "minimum": 0 }, "uniqueItems": true
+    },
+    "mem": {
+      "type": "object",
+      "properties": {
+        "providers": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+        "write": { "type": "boolean", "default": false }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": true
+}

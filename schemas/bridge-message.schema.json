@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mixum-agent-protocol.dev/schemas/bridge-message.schema.json",
+  "title": "MAP-Bridge messages (line-delimited JSON, runner <-> agent)",
+  "oneOf": [
+    { "$ref": "#/$defs/runnerToAgent" },
+    { "$ref": "#/$defs/agentToRunner" }
+  ],
+  "$defs": {
+    "runnerToAgent": {
+      "type": "object",
+      "required": ["type"],
+      "properties": { "type": { "enum": ["hello", "exec.done", "input.response", "suspend", "resume"] } },
+      "oneOf": [
+        {
+          "properties": {
+            "type": { "const": "hello" },
+            "instruction": { "type": "string" },
+            "params": { "type": "object" },
+            "env": { "type": "object" }
+          },
+          "required": ["instruction", "params"]
+        },
+        {
+          "properties": {
+            "type": { "const": "exec.done" },
+            "id": { "type": "string" },
+            "code": { "type": ["integer", "null"] },
+            "error": { "type": "string" }
+          },
+          "required": ["id", "code"]
+        },
+        {
+          "properties": {
+            "type": { "const": "input.response" },
+            "id": { "type": "string" },
+            "value": { "type": "string" }
+          },
+          "required": ["id", "value"]
+        },
+        { "properties": { "type": { "const": "suspend" } } },
+        { "properties": { "type": { "const": "resume" } } }
+      ]
+    },
+    "agentToRunner": {
+      "type": "object",
+      "required": ["type"],
+      "properties": { "type": { "enum": ["log", "progress", "exec", "input.request", "done", "fail"] } },
+      "oneOf": [
+        {
+          "properties": {
+            "type": { "const": "log" },
+            "line": { "type": "string" }
+          },
+          "required": ["line"]
+        },
+        {
+          "properties": {
+            "type": { "const": "progress" },
+            "pct": { "type": "integer", "minimum": 0, "maximum": 100 },
+            "step": { "type": "string" }
+          }
+        },
+        {
+          "properties": {
+            "type": { "const": "exec" },
+            "id": { "type": "string" },
+            "argv": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+            "cwd": { "type": "string" },
+            "env": { "type": "object", "additionalProperties": { "type": "string" } },
+            "timeoutMs": { "type": "integer", "minimum": 1 }
+          },
+          "required": ["id", "argv"]
+        },
+        {
+          "properties": {
+            "type": { "const": "input.request" },
+            "id": { "type": "string" },
+            "prompt": { "type": "string" },
+            "choices": { "type": "array", "items": { "type": "string" }, "minItems": 2 },
+            "sensitive": { "type": "boolean" },
+            "timeoutMs": { "type": "integer", "minimum": 1 }
+          },
+          "required": ["id", "prompt"]
+        },
+        {
+          "properties": {
+            "type": { "const": "done" },
+            "result": {}
+          }
+        },
+        {
+          "properties": {
+            "type": { "const": "fail" },
+            "error": { "type": "string" },
+            "code": { "type": "string" }
+          },
+          "required": ["error"]
+        }
+      ]
+    }
+  }
+}
