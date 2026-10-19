@@ -8,6 +8,10 @@
 
 use futures_util::{SinkExt, StreamExt};
 use map_core::{Envelope, ErrorCode, HelloOk, MapError};
+use rustls::crypto::{
+    verify_tls12_signature as verify_tls12, verify_tls13_signature as verify_tls13,
+    WebPkiSupportedAlgorithms,
+};
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::net::TcpStream;
@@ -46,13 +50,17 @@ impl MapClient {
             .into_client_request()
             .map_err(|e| MapError::Transport(e.to_string()))?;
         let connector = fingerprint.map(|expected| {
-            let config =
-                rustls::ClientConfig::builder_with_protocol_versions(&[&rustls::version::TLS13])
-                    .dangerous()
-                    .with_custom_certificate_verifier(Arc::new(PinnedVerifier {
-                        expected: normalize_fingerprint(expected),
-                    }))
-                    .with_no_client_auth();
+            let provider = rustls::crypto::ring::default_provider();
+            let algorithms = provider.signature_verification_algorithms;
+            let config = rustls::ClientConfig::builder_with_provider(Arc::new(provider))
+                .with_protocol_versions(&[&rustls::version::TLS13])
+                .expect("TLS13 由 ring provider 支持")
+                .dangerous()
+                .with_custom_certificate_verifier(Arc::new(PinnedVerifier {
+                    expected: normalize_fingerprint(expected),
+                    algorithms,
+                }))
+                .with_no_client_auth();
             Connector::Rustls(Arc::new(config))
         });
         let (mut ws, _response) = connect_async_tls_with_config(request, None, false, connector)
@@ -64,11 +72,24 @@ impl MapClient {
                 "token": token,
                 "client": client_name,
                 "profiles": ["map-core", "snapshot"],
-                "versions": [map_core::PROTOCOL_VERSION],
             }),
         );
         send_envelope(&mut ws, &hello).await?;
         let reply = wait_for(&mut ws, &hello.id, DEFAULT_TIMEOUT).await?;
+        if reply.is_err() {
+            let code = reply
+                .payload
+                .get("code")
+                .and_then(|value| serde_json::from_value(value.clone()).ok())
+                .unwrap_or(ErrorCode::Unauthorized);
+            let message = reply
+                .payload
+                .get("message")
+                .and_then(|value| value.as_str())
+                .unwrap_or("handshake rejected")
+                .to_owned();
+            return Err(MapError::Wire { code, message });
+        }
         let ok: HelloOk = serde_json::from_value(reply.payload)
             .map_err(|e| MapError::Transport(format!("bad hello payload: {e}")))?;
         Ok((Self { ws }, ok))
@@ -177,6 +198,7 @@ fn normalize_fingerprint(value: &str) -> String {
 #[derive(Debug)]
 struct PinnedVerifier {
     expected: String,
+    algorithms: WebPkiSupportedAlgorithms,
 }
 
 impl rustls::client::danger::ServerCertVerifier for PinnedVerifier {
@@ -204,20 +226,20 @@ impl rustls::client::danger::ServerCertVerifier for PinnedVerifier {
 
     fn verify_tls12_signature(
         &self,
-        _message: &[u8],
-        _cert: &rustls::pki_types::CertificateDer<'_>,
-        _dss: &rustls::DigitallySignedStruct,
+        message: &[u8],
+        cert: &rustls::pki_types::CertificateDer<'_>,
+        dss: &rustls::DigitallySignedStruct,
     ) -> Result<rustls::client::danger::HandshakeSignatureValid, rustls::Error> {
-        Ok(rustls::client::danger::HandshakeSignatureValid::assertion())
+        verify_tls12(message, cert, dss, &self.algorithms)
     }
 
     fn verify_tls13_signature(
         &self,
-        _message: &[u8],
-        _cert: &rustls::pki_types::CertificateDer<'_>,
-        _dss: &rustls::DigitallySignedStruct,
+        message: &[u8],
+        cert: &rustls::pki_types::CertificateDer<'_>,
+        dss: &rustls::DigitallySignedStruct,
     ) -> Result<rustls::client::danger::HandshakeSignatureValid, rustls::Error> {
-        Ok(rustls::client::danger::HandshakeSignatureValid::assertion())
+        verify_tls13(message, cert, dss, &self.algorithms)
     }
 
     fn supported_verify_schemes(&self) -> Vec<rustls::SignatureScheme> {
@@ -226,5 +248,41 @@ impl rustls::client::danger::ServerCertVerifier for PinnedVerifier {
             rustls::SignatureScheme::ECDSA_NISTP256_SHA256,
             rustls::SignatureScheme::ED25519,
         ]
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn fingerprint_normalization_is_colon_and_case_insensitive() {
+        assert_eq!(
+            normalize_fingerprint("aa:BB:01"),
+            normalize_fingerprint("AA:bb:01")
+        );
+    }
+
+    #[tokio::test]
+    #[ignore = "需要运行中的 MAP 节点：MAP_URL/MAP_TOKEN/MAP_NODE_FINGERPRINT"]
+    async fn live_connect_with_fingerprint() {
+        let url = std::env::var("MAP_URL").expect("MAP_URL");
+        let token = std::env::var("MAP_TOKEN").expect("MAP_TOKEN");
+        let fingerprint = std::env::var("MAP_NODE_FINGERPRINT").ok();
+        let (mut client, hello) = MapClient::connect_with_fingerprint(
+            &url,
+            &token,
+            "map-client-test",
+            fingerprint.as_deref(),
+        )
+        .await
+        .expect("connect");
+        assert!(!hello.session_id.is_empty());
+        let info = client
+            .call("sys.info", serde_json::json!({}))
+            .await
+            .unwrap();
+        assert!(info.get("server").is_some());
+        client.close().await;
     }
 }
