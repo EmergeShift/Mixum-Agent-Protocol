@@ -18,3 +18,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/); the protocol it
 - Documentation site (Astro Starlight) with English normative text and Chinese
   translations of overview and core concept pages.
 - RFC 0001: MAP v1 scope and relation to the mixumOS wire protocol.
+
+### Changed
+
+- Display: documented the private Node↔compositor control channel's
+  forward-compatibility rule — unknown record types are ignored and counted;
+  framing/payload validation errors are an explicit error path (minor
+  clarification, no wire change). Closes the spec side of EmergeShift/mixumOS#8.

@@ -84,3 +84,8 @@ Injection into a window in `mode: "agent"` replies `conflict` — claim it first
 - `release`: returns the window to `free`; the agent is told to resume.
 - `force: true` re-claims from another client (politeness is the client's problem; the protocol records who holds the claim).
 - Task end (any terminal state) returns all of the task's windows to `free`.
+
+## Private control channel
+
+The record-framed channel between the Node and its compositor (`mixumd` ↔ `mixcomp` in mixumOS) is **private**, but its evolution follows the same additive rule as the public protocol: record types evolve incrementally, and a receiver **must ignore unknown record types** (logging/counting them is encouraged) instead of closing the connection. Framing or payload validation failures are a separate, explicit error path and may terminate the channel. This rule is a minor clarification (2026-10); it does not change any wire layout.
+
