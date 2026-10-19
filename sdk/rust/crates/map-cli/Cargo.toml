@@ -1,0 +1,18 @@
+[package]
+name = "map-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "mart — inspect, verify, pack, restore and diff M-ART .mart snapshots"
+repository.workspace = true
+
+[[bin]]
+name = "mart"
+path = "src/main.rs"
+
+[dependencies]
+map-core.workspace = true
+map-snapshot.workspace = true
+clap.workspace = true
+serde_json.workspace = true
+anyhow.workspace = true

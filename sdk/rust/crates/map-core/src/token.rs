@@ -12,12 +12,13 @@ pub fn b64url_decode(input: &str) -> Result<Vec<u8>, MapError> {
     let mut acc: u32 = 0;
     let mut bits = 0u32;
     for ch in input.bytes() {
-        let val = TABLE.iter().position(|&t| t == ch).ok_or_else(|| {
-            MapError::Wire {
+        let val = TABLE
+            .iter()
+            .position(|&t| t == ch)
+            .ok_or_else(|| MapError::Wire {
                 code: crate::error::ErrorCode::BadRequest,
                 message: "token: invalid base64url character".into(),
-            }
-        })? as u32;
+            })? as u32;
         acc = (acc << 6) | val;
         bits += 6;
         if bits >= 8 {
@@ -31,7 +32,7 @@ pub fn b64url_decode(input: &str) -> Result<Vec<u8>, MapError> {
 /// Base64url (no padding) encode — used by token issuers and tooling.
 pub fn b64url_encode(input: &[u8]) -> String {
     const TABLE: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
-    let mut out = String::with_capacity((input.len() + 2) / 3 * 4);
+    let mut out = String::with_capacity(input.len().div_ceil(3) * 4);
     for chunk in input.chunks(3) {
         let b = [
             chunk.first().copied().unwrap_or(0),
@@ -75,7 +76,11 @@ impl MapToken {
             code: crate::error::ErrorCode::Unauthorized,
             message: format!("token: payload is not valid claims: {e}"),
         })?;
-        let token = Self { claims, payload, signature };
+        let token = Self {
+            claims,
+            payload,
+            signature,
+        };
         token.check_expiry()?;
         Ok(token)
     }
@@ -99,10 +104,12 @@ impl MapToken {
             code: crate::error::ErrorCode::Unauthorized,
             message: "token: malformed signature".into(),
         })?;
-        public_key.verify(&self.payload, &sig).map_err(|_| MapError::Wire {
-            code: crate::error::ErrorCode::Unauthorized,
-            message: "token: signature mismatch".into(),
-        })
+        public_key
+            .verify(&self.payload, &sig)
+            .map_err(|_| MapError::Wire {
+                code: crate::error::ErrorCode::Unauthorized,
+                message: "token: signature mismatch".into(),
+            })
     }
 }
 
@@ -114,7 +121,9 @@ pub fn new_ulid() -> String {
     static COUNTER: AtomicU64 = AtomicU64::new(0);
     const ENC: &[u8; 32] = b"0123456789ABCDEFGHJKMNPQRSTVWXYZ";
     let time = crate::types::now_ms() as u64;
-    let n = time.wrapping_mul(1_000_003).wrapping_add(COUNTER.fetch_add(1, Ordering::Relaxed));
+    let n = time
+        .wrapping_mul(1_000_003)
+        .wrapping_add(COUNTER.fetch_add(1, Ordering::Relaxed));
     let mut out = String::with_capacity(26);
     let mut t = time;
     for _ in 0..10 {
@@ -145,6 +154,8 @@ mod tests {
     fn ulid_shape() {
         let id = new_ulid();
         assert_eq!(id.len(), 26);
-        assert!(id.chars().all(|c| "0123456789ABCDEFGHJKMNPQRSTVWXYZ".contains(c)));
+        assert!(id
+            .chars()
+            .all(|c| "0123456789ABCDEFGHJKMNPQRSTVWXYZ".contains(c)));
     }
 }
