@@ -94,7 +94,9 @@ pub fn pack(
         None => None,
     };
 
-    let mut output = File::create(out)?;
+    let out = out.as_ref().to_path_buf();
+    let tmp = out.with_extension("mart.tmp");
+    let mut output = File::create(&tmp)?;
     output.write_all(&[0u8; HEADER_LEN as usize])?;
     let mut cursor = HEADER_LEN;
 
@@ -116,7 +118,14 @@ pub fn pack(
             .path()
             .strip_prefix(root)
             .map_err(|_| MartError::UnsafePath(entry.path().display().to_string()))?;
-        let rel = rel.to_string_lossy().replace('\\', "/");
+        // 非 UTF-8 文件名直接拒绝;分隔符只在 Windows 归一化为 `/`。
+        let rel = rel
+            .to_str()
+            .ok_or_else(|| MartError::UnsafePath("non-UTF-8 path".into()))?;
+        #[cfg(windows)]
+        let rel = rel.replace('\\', "/");
+        #[cfg(not(windows))]
+        let rel = rel.to_owned();
         validate_rel_path(&rel)?;
         let file_type = entry.file_type();
         let link_meta = fs::symlink_metadata(entry.path())?;
@@ -251,6 +260,11 @@ pub fn pack(
     output.seek(SeekFrom::Start(0))?;
     output.write_all(&header.encode())?;
     output.flush()?;
+    drop(output);
+    if let Err(e) = std::fs::rename(&tmp, &out) {
+        let _ = std::fs::remove_file(&tmp);
+        return Err(e.into());
+    }
 
     stats.bytes = file_len;
     Ok(stats)

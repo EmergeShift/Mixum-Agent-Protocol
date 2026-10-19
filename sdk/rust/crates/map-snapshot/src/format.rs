@@ -81,6 +81,11 @@ impl MartHeader {
         if self.version != FORMAT_VERSION {
             return Err(MartError::Unsupported(self.version));
         }
+        if self.flags != 0 {
+            return Err(MartError::Corrupt(
+                "reserved header flags must be zero".into(),
+            ));
+        }
         if self.chunk_off != HEADER_LEN {
             return Err(MartError::Corrupt(format!(
                 "chunk_off {} (expected {HEADER_LEN})",
@@ -97,6 +102,14 @@ impl MartHeader {
             .ok_or_else(|| MartError::Corrupt("archive region overflow".into()))?;
         if chunk_end > actual_len || archive_end > actual_len {
             return Err(MartError::Corrupt("region exceeds file length".into()));
+        }
+        if self.archive_off < chunk_end {
+            return Err(MartError::Corrupt("archive overlaps chunk region".into()));
+        }
+        if !self.archive_off.is_multiple_of(16) {
+            return Err(MartError::Corrupt(
+                "archive offset is not 16-byte aligned".into(),
+            ));
         }
         if archive_end != self.file_len || self.file_len != actual_len {
             return Err(MartError::Corrupt(

@@ -82,13 +82,14 @@ impl MartArchive {
         if sha256_bytes(archive) != header.archive_sha256 {
             return Err(MartError::Corrupt("archive digest mismatch".into()));
         }
+        // 先做 rkyv 结构校验,任何 archived 访问之前;摘要只证明字节未被改动,
+        // 不证明字节是合法 rkyv。
+        rkyv::check_archived_root::<MartManifest>(archive)
+            .map_err(|e| MartError::Corrupt(format!("invalid rkyv archive: {e}")))?;
         let this = Self { mmap, header };
-        {
-            let manifest = this.manifest();
-            if manifest.version != MANIFEST_VERSION {
-                return Err(MartError::Unsupported(manifest.version));
-            }
-            this.check_manifest()?;
+        this.check_manifest()?;
+        if this.manifest().version != MANIFEST_VERSION {
+            return Err(MartError::Unsupported(this.manifest().version));
         }
         Ok(this)
     }
@@ -116,17 +117,46 @@ impl MartArchive {
         if manifest.chunks.len() > u32::MAX as usize {
             return Err(MartError::Corrupt("too many chunks".into()));
         }
+        let mut paths = std::collections::HashSet::new();
         for dir in manifest.dirs.iter() {
             validate_rel_path(dir.path.as_str())?;
+            if dir.mode > 0o777 {
+                return Err(MartError::Corrupt(format!(
+                    "{}: mode {:#o} exceeds 0o777",
+                    dir.path.as_str(),
+                    dir.mode
+                )));
+            }
+            if !paths.insert(dir.path.as_str().to_owned()) {
+                return Err(MartError::Corrupt(format!(
+                    "duplicate manifest path: {}",
+                    dir.path.as_str()
+                )));
+            }
         }
         for file in manifest.files.iter() {
             validate_rel_path(file.path.as_str())?;
+            if file.mode > 0o777 {
+                return Err(MartError::Corrupt(format!(
+                    "{}: mode {:#o} exceeds 0o777",
+                    file.path.as_str(),
+                    file.mode
+                )));
+            }
+            if !paths.insert(file.path.as_str().to_owned()) {
+                return Err(MartError::Corrupt(format!(
+                    "duplicate manifest path: {}",
+                    file.path.as_str()
+                )));
+            }
             let mut total = 0u64;
             for index in file.chunks.iter() {
                 let chunk = manifest.chunks.get(*index as usize).ok_or_else(|| {
                     MartError::Corrupt(format!("chunk index {index} out of range"))
                 })?;
-                total += chunk.len;
+                total = total
+                    .checked_add(chunk.len)
+                    .ok_or_else(|| MartError::Corrupt("file chunk sum overflow".into()))?;
             }
             if file.symlink.is_none() && total != file.size {
                 return Err(MartError::Corrupt(format!(
@@ -139,7 +169,9 @@ impl MartArchive {
         let chunk_region_end = self.header.chunk_off + self.header.chunk_len;
         for (index, chunk) in manifest.chunks.iter().enumerate() {
             let start = chunk.offset;
-            let end = start + chunk.len;
+            let end = start
+                .checked_add(chunk.len)
+                .ok_or_else(|| MartError::Corrupt("chunk offset overflow".into()))?;
             if end > chunk_region_end {
                 return Err(MartError::Corrupt(format!(
                     "chunk {index} ({}) lies outside the chunk region",
@@ -199,29 +231,37 @@ impl MartArchive {
     pub fn restore(&self, dest: impl AsRef<Path>) -> Result<RestoreStats> {
         let dest = dest.as_ref();
         fs::create_dir_all(dest)?;
+        if fs::symlink_metadata(dest)?.file_type().is_symlink() {
+            return Err(MartError::Corrupt("restore dest is a symlink".into()));
+        }
+        // restore 是内容真正被使用的点:默认先全量校验 chunk 摘要与结构。
+        self.verify()?;
         let manifest = self.manifest();
         let mut stats = RestoreStats::default();
 
         for dir in manifest.dirs.iter() {
             let relative = validate_rel_path(dir.path.as_str())?;
-            let target = dest.join(relative);
-            fs::create_dir_all(&target)?;
+            let target = dest.join(&relative);
+            create_dir_no_symlink(dest, &relative)?;
             set_mode(&target, dir.mode)?;
             stats.dirs += 1;
         }
 
         for file in manifest.files.iter() {
             let relative = validate_rel_path(file.path.as_str())?;
-            let target = dest.join(relative);
-            if let Some(parent) = target.parent() {
-                fs::create_dir_all(parent)?;
+            let target = dest.join(&relative);
+            if let Some(parent) = relative.parent() {
+                if !parent.as_os_str().is_empty() {
+                    create_dir_no_symlink(dest, parent)?;
+                }
             }
             if let Some(link) = file.symlink.as_ref() {
+                validate_symlink_target(&relative, link.as_str())?;
                 create_symlink(link.as_str(), &target)?;
                 stats.files += 1;
                 continue;
             }
-            let mut output = File::create(&target)?;
+            let mut output = open_nofollow(&target)?;
             for index in file.chunks.iter() {
                 let payload = self.chunk_bytes(*index as usize)?;
                 output.write_all(payload)?;
@@ -368,10 +408,80 @@ fn sha256_bytes(bytes: &[u8]) -> [u8; 32] {
     Sha256::digest(bytes).into()
 }
 
+/// 逐级创建目录,拒绝穿过符号链接(包括 dest 内已存在的 symlink)。
+fn create_dir_no_symlink(dest: &Path, relative: &Path) -> Result<()> {
+    let mut current = dest.to_path_buf();
+    for component in relative.components() {
+        let std::path::Component::Normal(name) = component else {
+            continue;
+        };
+        current.push(name);
+        match fs::symlink_metadata(&current) {
+            Ok(meta) if meta.file_type().is_symlink() => {
+                return Err(MartError::Corrupt(format!(
+                    "refusing to traverse symlink: {}",
+                    current.display()
+                )));
+            }
+            Ok(meta) if !meta.is_dir() => {
+                return Err(MartError::NotADirectory(current.display().to_string()));
+            }
+            Ok(_) => {}
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                fs::create_dir(&current)?;
+            }
+            Err(e) => return Err(e.into()),
+        }
+    }
+    Ok(())
+}
+
+/// symlink target 策略:v1 只允许相对路径且不含 `..`/绝对路径。
+fn validate_symlink_target(link: &Path, target: &str) -> Result<()> {
+    use std::path::Component;
+    let path = Path::new(target);
+    if path.is_absolute() || path.has_root() {
+        return Err(MartError::UnsafePath(format!(
+            "{}: absolute symlink target {target}",
+            link.display()
+        )));
+    }
+    if path.components().any(|c| matches!(c, Component::ParentDir)) {
+        return Err(MartError::UnsafePath(format!(
+            "{}: symlink target escapes: {target}",
+            link.display()
+        )));
+    }
+    Ok(())
+}
+
+#[cfg(unix)]
+fn open_nofollow(path: &Path) -> Result<File> {
+    use std::os::unix::fs::OpenOptionsExt;
+    std::fs::OpenOptions::new()
+        .write(true)
+        .create(true)
+        .truncate(true)
+        .custom_flags(libc::O_NOFOLLOW)
+        .open(path)
+        .map_err(MartError::from)
+}
+
+#[cfg(not(unix))]
+fn open_nofollow(path: &Path) -> Result<File> {
+    if fs::symlink_metadata(path).is_ok_and(|m| m.file_type().is_symlink()) {
+        return Err(MartError::Corrupt(format!(
+            "refusing to overwrite symlink: {}",
+            path.display()
+        )));
+    }
+    File::create(path).map_err(MartError::from)
+}
+
 #[cfg(unix)]
 fn set_mode(path: &Path, mode: u32) -> Result<()> {
     use std::os::unix::fs::PermissionsExt;
-    let permissions = fs::Permissions::from_mode(mode);
+    let permissions = fs::Permissions::from_mode(mode & 0o777);
     fs::set_permissions(path, permissions)?;
     Ok(())
 }
@@ -398,4 +508,16 @@ fn create_symlink(_target: &str, link: &Path) -> Result<()> {
 /// Re-export for callers that only need to know it is a path inside `dest`.
 pub fn safe_join(dest: &Path, relative: &str) -> Result<PathBuf> {
     Ok(dest.join(validate_rel_path(relative)?))
+}
+
+#[cfg(test)]
+mod safety_tests {
+    use super::*;
+
+    #[test]
+    fn symlink_targets_cannot_escape() {
+        assert!(validate_symlink_target(Path::new("a/link"), "target").is_ok());
+        assert!(validate_symlink_target(Path::new("a/link"), "../outside").is_err());
+        assert!(validate_symlink_target(Path::new("a/link"), "/etc/passwd").is_err());
+    }
 }

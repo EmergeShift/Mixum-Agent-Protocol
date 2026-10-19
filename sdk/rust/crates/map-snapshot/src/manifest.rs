@@ -9,6 +9,7 @@
 /// chunk payload inside the `.mart` file, so a reader can slice the mmap
 /// directly without a second index.
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Debug, Clone)]
+#[archive(check_bytes)]
 pub struct MartChunk {
     /// Lowercase hex SHA-256 of the plaintext chunk bytes.
     pub hash: String,
@@ -22,6 +23,7 @@ pub struct MartChunk {
 
 /// One file entry. `chunks` indexes `MartManifest::chunks`.
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Debug, Clone)]
+#[archive(check_bytes)]
 pub struct MartFile {
     /// Relative path with `/` separators; never absolute, never contains `..`.
     pub path: String,
@@ -34,6 +36,7 @@ pub struct MartFile {
 }
 
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Debug, Clone)]
+#[archive(check_bytes)]
 pub struct MartDir {
     pub path: String,
     pub mode: u32,
@@ -42,6 +45,7 @@ pub struct MartDir {
 /// Root archive payload. Everything the reader needs is reachable from here;
 /// chunk bytes stay in place in the mapping.
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Debug, Clone)]
+#[archive(check_bytes)]
 pub struct MartManifest {
     /// `.mart` format version (independent of the MAP protocol version).
     pub version: u32,
