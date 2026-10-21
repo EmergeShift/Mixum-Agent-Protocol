@@ -15,7 +15,10 @@
     "seq": { "type": "integer", "minimum": 0 },
     "node": {
       "type": "string",
-      "description": "Optional gateway routing target. Direct node connections ignore it; gateway clients set it to select an online node."
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[^:]+$",
+      "description": "Optional gateway routing target (1-64 chars, no colon). Direct node connections ignore it; gateway clients set it to select an online node."
     },
     "replyTo": { "$ref": "#/$defs/ulid" },
     "ts": { "type": "integer", "minimum": 0, "description": "Unix milliseconds" },
