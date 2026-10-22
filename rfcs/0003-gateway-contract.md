@@ -1,6 +1,7 @@
 # RFC 0003: Gateway routing and control ops
 
-Status: draft (implementation tracked in mixumOS gateway).
+Status: Accepted. Implemented in mixumOS gateway 0.1.5; SDK node routing and the
+MixumART consumer are tracked in issue #5.
 
 ## Envelope extension
 
@@ -18,7 +19,7 @@ Status: draft (implementation tracked in mixumOS gateway).
 |---|---|---|---|
 | `gateway.token.issue` | admin token (`Cap::Admin`) | `{kind: "user"\|"node", name}` | `{token}` |
 | `gateway.token.revoke` | admin | `{jti}` | `{revoked: true}` |
-| `gateway.node.list` | user/admin | `{}` | `{nodes: [name]}` |
+| `gateway.node.list` | user/device/admin | `{}` | `{nodes: [name]}` |
 | `gateway.pair.create` | user | `{}` | `{code, expiresIn}` |
 | `gateway.pair.claim` | unauthenticated first message | `{code, deviceName}` | `{token, deviceId}` |
 | `gateway.device.list` | user/admin | `{}` | `{devices: [{jti,name,sub,owner,iat}]}` |
@@ -29,7 +30,8 @@ Rules:
 - Node tokens carry `sub=node:<name>`; a gateway MUST reject a registration
   whose token subject does not match the requested name.
 - Device tokens are owned by the pairing user; list/revoke is owner-scoped,
-  admin sees all.
+  admin sees all. Device tokens may call `gateway.node.list` (node names only,
+  no secrets); other `gateway.*` control ops keep the caller restrictions above.
 - Pairing codes are single-use, 5 minutes, CSPRNG, and rate-limited per source
   IP (10 failures/minute).
 - Errors use the normal `*.err` envelope; `code` is one of `bad_request`,
