@@ -242,3 +242,47 @@ test("resume surfaces session.resume.err as MapError", async () => {
     (error) => error.code === "not_found",
   );
 });
+
+test("gateway node routes requests and can be overridden per request", async () => {
+  reset((socket, envelope) => {
+    if (envelope.op === "session.hello") {
+      setTimeout(() => socket.emit(replyTo(envelope, "session.hello.ok", HELLO_PAYLOAD)), 0);
+    } else {
+      setTimeout(() => socket.emit(replyTo(envelope, `${envelope.op}.ok`, {})), 0);
+    }
+  });
+  const client = await MapClient.connect({
+    url: "ws://gateway.test/ws",
+    token: "map1.token",
+    node: "mac-mini",
+    WebSocketImpl: MockSocket,
+  });
+  const socket = MockSocket.instances[0];
+  assert.equal(client.node, "mac-mini");
+
+  await client.sys.info();
+  assert.equal(socket.sent.at(-1).node, "mac-mini");
+
+  await client.request("sys.ping", {}, "studio");
+  assert.equal(socket.sent.at(-1).node, "studio");
+  client.close();
+});
+
+test("direct-node clients omit envelope.node", async () => {
+  reset((socket, envelope) => {
+    if (envelope.op === "session.hello") {
+      setTimeout(() => socket.emit(replyTo(envelope, "session.hello.ok", HELLO_PAYLOAD)), 0);
+    } else {
+      setTimeout(() => socket.emit(replyTo(envelope, `${envelope.op}.ok`, {})), 0);
+    }
+  });
+  const client = await MapClient.connect({
+    url: "ws://node.test/ws",
+    token: "map1.token",
+    WebSocketImpl: MockSocket,
+  });
+  const socket = MockSocket.instances[0];
+  await client.sys.info();
+  assert.equal("node" in socket.sent.at(-1), false);
+  client.close();
+});
