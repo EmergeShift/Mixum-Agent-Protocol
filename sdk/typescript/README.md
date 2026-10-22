@@ -31,6 +31,17 @@ const tree = await client.snap.tree();
 await client.snap.restore({ node: tree.head, strategy: "inplace" });
 ```
 
+### Routing through a gateway
+
+Pass `node` to route every request to a registered node; `request()` accepts a
+one-off override as its third argument:
+
+```ts
+const client = await MapClient.connect({ url, token, node: "mac-mini" });
+await client.sys.info();                       // envelope.node = "mac-mini"
+await client.request("sys.info", {}, "studio"); // one-off override
+```
+
 ### Reconnecting a session
 
 `session.resume` restores claims and subscriptions without a new handshake and

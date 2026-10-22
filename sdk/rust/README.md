@@ -65,6 +65,8 @@ layout, alignment and integrity rules.
 use map_client::MapClient;
 
 let (mut client, hello) = MapClient::connect(url, token, "my-agent/0.1").await?;
+// Behind a gateway: route every request to a node by name.
+let mut client = client.with_node("mac-mini");
 let task = client.call("task.submit", serde_json::json!({
     "instruction": "run the test suite",
     "agent": "shell",
