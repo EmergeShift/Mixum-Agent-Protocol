@@ -3,22 +3,89 @@
   "$id": "https://mixum-agent-protocol.dev/schemas/snapshot-node.schema.json",
   "title": "MAP SnapNode (snapshot tree node)",
   "type": "object",
-  "required": ["id", "branch", "kind", "createdAt", "sizeBytes", "chunks"],
+  "required": [
+    "id",
+    "branch",
+    "kind",
+    "createdAt",
+    "sizeBytes",
+    "chunks"
+  ],
   "properties": {
-    "id": { "type": "string", "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$" },
-    "parent": { "type": ["string", "null"] },
-    "branch": { "type": "string", "minLength": 1 },
-    "label": { "type": ["string", "null"] },
-    "kind": { "enum": ["disk", "memory", "hybrid"] },
-    "auto": { "type": "boolean", "description": "True for runner/daemon-created snapshots (e.g. pre-task)" },
-    "createdAt": { "type": "integer" },
-    "origin": { "type": ["string", "null"], "description": "Source host/node for imported nodes" },
-    "sizeBytes": { "type": "integer", "minimum": 0 },
-    "chunks": { "type": "integer", "minimum": 0 },
-    "kernel": { "type": ["string", "null"] },
-    "arch": { "type": ["string", "null"] },
-    "disk": { "$ref": "snapshot-manifest.schema.json" },
-    "memory": { "$ref": "snapshot-manifest.schema.json" }
+    "id": {
+      "type": "string",
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+    },
+    "parent": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "branch": {
+      "type": "string",
+      "minLength": 1
+    },
+    "label": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "kind": {
+      "enum": [
+        "disk",
+        "memory",
+        "hybrid"
+      ]
+    },
+    "auto": {
+      "type": "boolean",
+      "description": "True for runner/daemon-created snapshots (e.g. pre-task)"
+    },
+    "createdAt": {
+      "type": "integer"
+    },
+    "origin": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Source host/node for imported nodes"
+    },
+    "sizeBytes": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "chunks": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "kernel": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "arch": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "disk": {
+      "$ref": "snapshot-manifest.schema.json"
+    },
+    "memory": {
+      "$ref": "snapshot-manifest.schema.json"
+    },
+    "tags": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Extension metadata such as base/baseDigest; clients may ignore unknown keys."
+    }
   },
   "additionalProperties": true
 }
