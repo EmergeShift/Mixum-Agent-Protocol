@@ -25,6 +25,8 @@ pub const DEFAULT_TIMEOUT: Duration = Duration::from_secs(30);
 
 pub struct MapClient {
     ws: WebSocketStream<MaybeTlsStream<TcpStream>>,
+    /// Gateway routing target applied to every request; `None` for direct nodes.
+    node: Option<String>,
 }
 
 impl MapClient {
@@ -92,7 +94,22 @@ impl MapClient {
         }
         let ok: HelloOk = serde_json::from_value(reply.payload)
             .map_err(|e| MapError::Transport(format!("bad hello payload: {e}")))?;
-        Ok((Self { ws }, ok))
+        Ok((Self { ws, node: None }, ok))
+    }
+
+    /// Route subsequent requests through a gateway to `node`.
+    pub fn with_node(mut self, node: impl Into<String>) -> Self {
+        self.node = Some(node.into());
+        self
+    }
+
+    /// Change (or clear) the gateway routing target.
+    pub fn set_node(&mut self, node: Option<String>) {
+        self.node = node;
+    }
+
+    pub fn node(&self) -> Option<&str> {
+        self.node.as_deref()
     }
 
     /// Send one request and wait for the matching reply.
@@ -110,7 +127,7 @@ impl MapClient {
         payload: serde_json::Value,
         timeout: Duration,
     ) -> Result<serde_json::Value, MapError> {
-        let request = Envelope::request(op, payload);
+        let request = routed_envelope(self.node.as_deref(), op, payload);
         let id = request.id.clone();
         send_envelope(&mut self.ws, &request).await?;
         let reply = wait_for(&mut self.ws, &id, timeout).await?;
@@ -135,6 +152,13 @@ impl MapClient {
     pub async fn close(mut self) {
         let _ = self.ws.close(None).await;
     }
+}
+
+/// Build a request envelope, applying the client's gateway routing target.
+fn routed_envelope(node: Option<&str>, op: &str, payload: serde_json::Value) -> Envelope {
+    let mut envelope = Envelope::request(op, payload);
+    envelope.node = node.map(str::to_owned);
+    envelope
 }
 
 async fn send_envelope(
@@ -261,6 +285,15 @@ mod tests {
             normalize_fingerprint("aa:BB:01"),
             normalize_fingerprint("AA:bb:01")
         );
+    }
+
+    #[test]
+    fn routed_envelope_applies_node_target() {
+        let direct = routed_envelope(None, "sys.ping", serde_json::json!({}));
+        assert!(direct.node.is_none());
+
+        let routed = routed_envelope(Some("mac-mini"), "sys.ping", serde_json::json!({}));
+        assert_eq!(routed.node.as_deref(), Some("mac-mini"));
     }
 
     #[tokio::test]

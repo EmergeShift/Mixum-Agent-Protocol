@@ -389,3 +389,23 @@ pub struct VmNodeEndpoint {
     pub url: String,
     pub fingerprint: String,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn envelope_node_round_trips_and_is_omitted_when_absent() {
+        let mut envelope = Envelope::request("sys.ping", serde_json::json!({}));
+
+        let direct = serde_json::to_value(&envelope).unwrap();
+        assert!(direct.get("node").is_none(), "{direct}");
+
+        envelope.node = Some("mac-mini".into());
+        let routed = serde_json::to_value(&envelope).unwrap();
+        assert_eq!(routed["node"], "mac-mini");
+
+        let parsed: Envelope = serde_json::from_value(routed).unwrap();
+        assert_eq!(parsed.node.as_deref(), Some("mac-mini"));
+    }
+}
