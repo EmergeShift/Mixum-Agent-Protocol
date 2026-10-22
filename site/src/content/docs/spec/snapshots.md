@@ -57,6 +57,9 @@ SnapNode {
 - **Explicit fork** (`snap.fork { node, branch }`): point a (new) branch's head at any node without touching the workspace. Name collisions auto-suffix `-2`, `-3`, …
 - **Any past node can be restored directly**, including "future" nodes on other timelines — nothing is lost by rolling back.
 - `origin` records where a node was imported from (host name / node id) — trees show their migration history.
+- `tags` is optional extension metadata (for example `base`, `baseDigest`). Restoring a
+  node whose tags name a different base should be refused unless the operator
+  explicitly overrides it.
 - Container/VM initialization creates the **`genesis`** snapshot (empty workspace): the root of every tree.
 
 ### A user story
