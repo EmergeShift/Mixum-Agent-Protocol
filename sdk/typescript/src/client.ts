@@ -33,6 +33,8 @@ export interface MapConnectOptions {
   requestTimeoutMs?: number;
   /** WebSocket constructor override (tests, TLS-pinning wrappers). */
   WebSocketImpl?: typeof WebSocket;
+  /** Gateway routing target for every request (envelope.node). Omit for direct nodes. */
+  node?: string;
   /**
    * Speak the pre-MAP wire dialect of 0.1.0 nodes: subprotocol `mixum.v1` and
    * handshake op `hello` (alias kept by MAP v1). New nodes need no option.
@@ -53,6 +55,8 @@ export interface MapResumeOptions {
   requestTimeoutMs?: number;
   /** WebSocket constructor override (tests, TLS-pinning wrappers). */
   WebSocketImpl?: typeof WebSocket;
+  /** Gateway routing target for the resumed session (envelope.node). */
+  node?: string;
 }
 
 type ReplyResolver = {
@@ -84,6 +88,7 @@ export class MapClient {
   #videoCodecs = new Map<number, VideoCodec>();
   #requestTimeoutMs: number;
   #lastSeq = 0;
+  #node: string | undefined;
   /** Push envelopes buffered until a push handler registers (resume replay). */
   #earlyPush: Envelope[] = [];
   /** Replayed envelopes still expected from session.resume. */
@@ -96,11 +101,13 @@ export class MapClient {
     requestTimeoutMs: number,
     buffered: unknown[] = [],
     replayCount = 0,
+    node?: string,
   ) {
     this.#ws = ws;
     this.hello = hello;
     this.#requestTimeoutMs = requestTimeoutMs;
     this.#replayRemaining = replayCount;
+    this.#node = node;
     ws.binaryType = "arraybuffer";
     ws.addEventListener("message", (ev) => this.#onMessage(ev.data));
     ws.addEventListener("close", () => this.#onClose());
@@ -158,7 +165,7 @@ export class MapClient {
       throw new MapError(errCode(p.code), p.message ?? "handshake failed");
     }
     const hello = envelopePayload(reply) as unknown as HelloOk;
-    const client = new MapClient(ws, hello, timeoutMs, buffered);
+    const client = new MapClient(ws, hello, timeoutMs, buffered, 0, opts.node);
     detach();
     return client;
   }
@@ -179,6 +186,7 @@ export class MapClient {
       ts: Date.now(),
       payload: { sessionId: opts.sessionId, lastSeq: opts.lastSeq ?? 0 },
     };
+    if (opts.node !== undefined) env.node = opts.node;
     const { reply, buffered, detach } = await awaitReply(ws, env, timeoutMs, "resume timed out");
     if (reply.op.endsWith(".err")) {
       const p = envelopePayload(reply) as { code?: string; message?: string };
@@ -197,7 +205,7 @@ export class MapClient {
       versions: p.versions ?? [PROTOCOL_VERSION],
       heartbeat: p.heartbeat ?? 30,
     };
-    const client = new MapClient(ws, hello, timeoutMs, buffered, p.replayed ?? 0);
+    const client = new MapClient(ws, hello, timeoutMs, buffered, p.replayed ?? 0, opts.node);
     detach();
     return client;
   }
@@ -219,10 +227,21 @@ export class MapClient {
     return [...(this.hello.profiles ?? [])];
   }
 
+  /** Gateway routing target applied to requests, if configured. */
+  get node(): string | undefined {
+    return this.#node;
+  }
+
   /** Send a request op and await its .ok payload; .err rejects with MapError. */
-  async request<P = Record<string, unknown>>(op: string, payload: Record<string, unknown> = {}): Promise<P> {
+  async request<P = Record<string, unknown>>(
+    op: string,
+    payload: Record<string, unknown> = {},
+    node?: string,
+  ): Promise<P> {
     const id = ulid();
     const env: Envelope = { v: PROTOCOL_VERSION, id, op, ts: Date.now(), payload };
+    const routed = node ?? this.#node;
+    if (routed !== undefined) env.node = routed;
     return new Promise<P>((resolve, reject) => {
       const timer = setTimeout(() => {
         this.#pending.delete(id);
