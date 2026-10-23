@@ -10,8 +10,10 @@ Two roles, ten minutes: run a **Node** (the mixumOS reference runtime), then dri
 The fastest Node is a mixumOS container (Linux, or a VM on macOS/Windows via a MAP Host):
 
 ```bash
-# reference runtime image (see mixumOS docs for builds and the Host-based flow)
-docker run -d --name map-node -p 7601:7601 ghcr.io/ashreo/mixumos-node:latest
+# Build the rootfs in the mixumOS repo (`make dist ARCH=aarch64`), then import it.
+# The 0.1.5 release ships an OCI/rootfs tarball; a GHCR image is not published yet.
+docker import --platform linux/arm64 dist/out/rootfs-aarch64.tar mixumos:0.1.5-dev
+docker run -d --name map-node -p 7601:7601 mixumos:0.1.5-dev /entrypoint.sh
 ```
 
 First start generates a Node identity and a **bootstrap admin token** — it is printed once (or mounted from a secret). Keep it for step 3.
@@ -20,8 +22,14 @@ First start generates a Node identity and a **bootstrap admin token** — it is 
 
 ## 2. Install the client SDK
 
+The npm package is not published before v1.0. Build it from this repository:
+
 ```bash
-npm install @mixum/map
+git clone https://github.com/EmergeShift/Mixum-Agent-Protocol
+cd Mixum-Agent-Protocol/sdk/typescript
+npm ci && npm run build && npm link
+# in your own project:
+npm link @mixum/map
 ```
 
 ## 3. Hello, Node

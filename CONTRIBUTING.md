@@ -9,7 +9,7 @@ Thank you for helping make MAP a protocol the whole agent ecosystem can rely on.
 1. A spec chapter diff (`site/src/content/docs/spec/…`).
 2. A JSON Schema diff in `schemas/` if a control-plane payload changed.
 3. A conformance vector in `vectors/` for new or tricky behavior.
-4. A minor or major version decision (see [Versioning & Governance](site/src/content/docs/spec/versioning-governance)).
+4. A minor or major version decision (see [Versioning & Governance](site/src/content/docs/spec/versioning-governance.md)).
 
 ## RFCs
 

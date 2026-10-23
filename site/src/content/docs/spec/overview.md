@@ -23,9 +23,9 @@ MCP standardized the agent↔tool edge. MAP standardizes the agent↔environment
 
 | Project | Role | MAP conformance |
 |---|---|---|
-| [mixumOS](https://github.com/ashreo/mixumOS) | The system base: an Arch-based Agent OS distribution. Containers/VMs running `mixum-agentd` + `mixcomp` are the reference **Node** implementation. | Core, Display, Mobility (reference implementation) |
+| [mixumOS](https://github.com/EmergeShift/mixumOS) | The system base: an Arch-based Agent OS distribution. Containers/VMs running `mixum-agentd` + `mixcomp` are the reference **Node** implementation. | Core, Display, Mobility (reference implementation) |
 | **Mixum Agent Protocol** (this repo) | The contract: normative specification, JSON Schemas, conformance vectors, SDKs. | — |
-| [Mixum Agent Env (MixumART)](https://github.com/ashreo/mixum-Agent-Env) | Desktop GUI and companion environment: VM lifecycle on macOS/Windows/Linux, agent platform connectors. Reference **Host** + **Client**. | Host, Core client |
+| [Mixum Agent Env (MixumART)](https://github.com/EmergeShift/MixumART) | Desktop GUI and companion environment: VM lifecycle on macOS/Windows/Linux, agent platform connectors. Reference **Host** + **Client**. | Host, Core client |
 
 ## Design principles
 

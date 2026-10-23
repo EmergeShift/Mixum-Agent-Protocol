@@ -1,6 +1,6 @@
 # @mixum/map
 
-TypeScript SDK for the [Mixum Agent Protocol (MAP)](https://github.com/ashreo/Mixum-Agent-Protocol) — skeleton release.
+TypeScript SDK for the [Mixum Agent Protocol (MAP)](https://github.com/EmergeShift/Mixum-Agent-Protocol) — skeleton release.
 
 The [specification](../../site/src/content/docs/spec) is authoritative; this SDK is a typed convenience over the wire.
 

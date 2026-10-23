@@ -36,7 +36,7 @@ Every spec chapter carries a **Stability** line:
 
 ## Governance
 
-See [GOVERNANCE.md](https://github.com/ashreo/Mixum-Agent-Protocol/blob/main/GOVERNANCE.md) for the full text. In short:
+See [GOVERNANCE.md](https://github.com/EmergeShift/Mixum-Agent-Protocol/blob/main/GOVERNANCE.md) for the full text. In short:
 
 - **RFC-first**: semantic changes go through `rfcs/` (Idea → Draft → Last Call → Accepted → Implemented); typos and clarifications don't.
 - **English is normative**; translations must never invent semantics.
@@ -46,8 +46,8 @@ See [GOVERNANCE.md](https://github.com/ashreo/Mixum-Agent-Protocol/blob/main/GOV
 
 An implementation claims conformance **scoped by profile** (e.g. *"MAP v1 Core + Display conformant"*) when it:
 
-1. Implements every op of the claimed profiles with the exact request/reply shapes of the JSON Schemas in [`schemas/`](https://github.com/ashreo/Mixum-Agent-Protocol/tree/main/schemas);
-2. Passes the vectors for those profiles in [`vectors/`](https://github.com/ashreo/Mixum-Agent-Protocol/tree/main/vectors);
+1. Implements every op of the claimed profiles with the exact request/reply shapes of the JSON Schemas in [`schemas/`](https://github.com/EmergeShift/Mixum-Agent-Protocol/tree/main/schemas);
+2. Passes the vectors for those profiles in [`vectors/`](https://github.com/EmergeShift/Mixum-Agent-Protocol/tree/main/vectors);
 3. Rejects everything it does not implement with `unsupported` instead of guessing.
 
 Self-certification lives in the implementation's README; a community conformance runner is planned post-v1.0. Vendors claiming conformance without passing vectors are asked to correct or remove the claim — the community treats false claims as a governance matter.

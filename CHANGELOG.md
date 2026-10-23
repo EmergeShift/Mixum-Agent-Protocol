@@ -2,7 +2,7 @@
 
 All notable changes to the MAP specification and repository artifacts are documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/); the protocol itself follows
-[Versioning & Governance](site/src/content/docs/spec/versioning-governance).
+[Versioning & Governance](site/src/content/docs/spec/versioning-governance.md).
 
 ## [Unreleased]
 
