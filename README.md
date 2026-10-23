@@ -234,9 +234,9 @@ MAP streams each window independently — clients attach per window, never to a 
 ```
 
 - `mode` is the takeover state: `agent` (task-owned, watch-only), `user` (claimed by a client), `free`.
+- `png` is the codec both reference implementations actually use for local/LAN. It sends a full frame first, then only the bounding box of changed pixels, plus cursor-only frames with no image. It is implemented end to end, but it is **not yet a conformance requirement** — a third-party Node may fall back to JPEG, and the attach reply's `codec` is authoritative.
 - `jpeg` is the mandatory baseline for interoperability; `h264` is optional and negotiated. The attach reply's `codec` is authoritative; a Node without an encoder silently serves JPEG.
 - Every video record carries a 27-byte header with window id, size, flags and **cursor position**, so the pointer is always consistent with the frame it came from.
-- `png` is the codec both reference implementations actually use for local/LAN. It sends a full frame first, then only the bounding box of changed pixels, plus cursor-only frames with no image. It is implemented end to end, but it is **not yet a conformance requirement** — a third-party Node may fall back to JPEG, and the attach reply's `codec` is authoritative.
 - Input injection into an `agent` window replies `conflict`; claim it first. The takeover state machine forwards `suspend` to the agent and `resume` on release.
 
 ## Security model
