@@ -1,6 +1,7 @@
 <div align="center">
+  <img src="brand/app-icon.svg" alt="MAP" width="72">
   <h1>Mixum Agent Protocol</h1>
-  <h3>MCP 标准化了工具，MAP 标准化了世界。</h3>
+  <h3>MCP 让 agent 学会了调用工具。我们认为“环境”也需要一份契约——这是我们的草稿。</h3>
   <p>一个开放协议，把 AI agent 接到隔离、可快照的计算环境——<br/>agent 生活的那台机器——横跨 macOS、Windows、Linux、本地笔记本与云端。</p>
   <p>
     <a href="https://github.com/EmergeShift/Mixum-Agent-Protocol"><img alt="Spec: v1 Draft" src="https://img.shields.io/badge/spec-v1%20Draft-orange"></a>
@@ -26,13 +27,13 @@ MAP 是草稿。控制面能跑，两个独立实现也能互通，但规范还�
 
 我们是一个小团队。规范就是产品，所以它在 v1.0 之前会一直变——这正是现在发布的理由。如果哪里定义不清或写错了，欢迎开 issue 或 RFC；在还便宜的时候提出反对，最有价值。
 
-## 缺失的那一层
+## 我们看到的缺口
 
 只会调用工具的 agent，仍然被困在别人的沙箱里。
 
-MCP 给了生态一个标准方式，让 agent 调用**工具**；但它没有标准化工具运行的那个东西：带文件系统的工作区、任务生命周期、桌面、撤销能力，以及迁移能力。每个沙箱厂商仍在为同样的五个需求发明私有 API，结果是客户端被锁死在一个后端，agent 被锁死在一个运行时。
+MCP 给了生态一个标准方式，让 agent 调用**工具**。但工具运行的那个东西——工作区、任务生命周期、桌面、撤销、迁移——仍没有共享契约。我们认为应该有。
 
-MAP 定义的是另一条边：
+MAP 是我们对这个契约的提案：
 
 | 边 | 标准 | 承载什么 |
 |---|---|---|
@@ -52,7 +53,7 @@ MAP 定义的是另一条边：
         └──────────────────────────────────────────────────┘
 ```
 
-## MAP 标准化什么
+## MAP 想标准化什么
 
 | Profile | 范围 | v1 状态 |
 |---|---|---|
@@ -73,6 +74,12 @@ MAP 定义的是另一条边：
 4. **协商式、增量演进。** 版本在 hello 时协商。新 op、可选字段、新 codec 是 minor；语义或二进制布局变化是 major，且很少发生。
 5. **Profile，而不是单体。** MAP-Core 加可选 profile。profile 不存在时客户端优雅降级。
 6. **语言中立的线格式。** JSON 控制面加带标签的二进制帧，由 JSON Schema 与可执行一致性向量锁定。SDK 是便利层，永远不是定义。
+
+## 我们可能错在哪
+
+我们不确定 profile 的切分对不对，不确定 memory 和 host 该不该放进 v1，也不确定能力令牌对多租户网关是否足够。草稿公开，就是为了让做过这些系统的人告诉我们漏了什么。
+
+如果你实现过类似的沙箱 API、快照存储或令牌模型，一句直接的批评比一个 star 更有价值。欢迎开 issue 或 RFC。
 
 ## 角色与拓扑
 
@@ -250,7 +257,7 @@ MAP 逐窗口推流——客户端按窗口 attach，而不是订阅整块屏幕
 
 完整威胁模型、令牌签发与加密规则见 [Transport & Security](site/src/content/docs/spec/transport-security.md)。
 
-## 一致性：靠 schema + 向量，不靠口号
+## 一致性：靠 schema 和向量
 
 正文对人来说是规范；这些产物对机器来说是规范：
 
@@ -399,7 +406,7 @@ npm run build    # 生产构建，同时做链接/错别字检查
 
 ## 信任与许可
 
-MAP 以 [Apache-2.0](LICENSE) 发布。贡献使用 DCO sign-off，而不是 CLA。[TRUST 承诺](TRUST.md)是项目的一部分，不是营销：不回传、凭据不经过 Mixum 基础设施、内容留在用户环境、遥测（如果有）只存在于桌面端且默认关闭、gateway 开源可自托管、可迁移性是一项权利。
+MAP 以 [Apache-2.0](LICENSE) 发布；schema、向量、SDK 与站点内容沿用同一许可。第三方组件遵循各自许可，见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。贡献使用 DCO sign-off，而不是 CLA。[TRUST 承诺](TRUST.md)是项目的一部分，不是营销：不回传、凭据不经过 Mixum 基础设施、内容留在用户环境、遥测（如果有）只存在于桌面端且默认关闭、gateway 开源可自托管、可迁移性是一项权利。
 
 ---
 

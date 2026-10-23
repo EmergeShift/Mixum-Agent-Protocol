@@ -1,6 +1,7 @@
 <div align="center">
+  <img src="brand/app-icon.svg" alt="MAP" width="72">
   <h1>Mixum Agent Protocol</h1>
-  <h3>MCP standardized the tools. MAP standardizes the world.</h3>
+  <h3>MCP gave agents a way to call tools. We think environments deserve a contract too — this is our draft.</h3>
   <p>An open protocol that connects AI agents to isolated, snapshot-capable computing environments —<br/>the machine an agent lives in — across macOS, Windows, Linux, local laptops and cloud.</p>
   <p>
     <a href="https://github.com/EmergeShift/Mixum-Agent-Protocol"><img alt="Spec: v1 Draft" src="https://img.shields.io/badge/spec-v1%20Draft-orange"></a>
@@ -28,13 +29,13 @@ We are a small team. The spec is the product, so it will keep changing until
 v1.0 — that is the point of publishing it now. If something is underspecified or
 wrong, open an issue or an RFC; disagreement is useful while it is still cheap.
 
-## The missing layer
+## The gap we see
 
 An agent that can only call tools is still trapped in someone else's sandbox.
 
-MCP gave the ecosystem a standard way for an agent to call a **tool**. It did not standardize the thing the tool runs inside: a workspace with a filesystem, a task lifecycle, a desktop, a way to undo, and a way to move. Every sandbox vendor still invents a private API for the same five needs, so clients get locked to one backend and agents get locked to one runtime.
+MCP gave the ecosystem a standard way for an agent to call a **tool**. The thing the tool runs inside — a workspace, a task lifecycle, a desktop, undo, mobility — still has no shared contract. We think it should.
 
-MAP is the contract for the other edge:
+MAP is our proposal for that contract:
 
 | Edge | Standard | What it carries |
 |---|---|---|
@@ -54,7 +55,7 @@ They are complementary, not competing. An MCP server can run inside a MAP Node; 
         └──────────────────────────────────────────────────┘
 ```
 
-## What MAP standardizes
+## What MAP tries to standardize
 
 | Profile | Scope | v1 status |
 |---|---|---|
@@ -75,6 +76,15 @@ Conformance is scoped by profile. An implementation can claim *"MAP v1 Core + Di
 4. **Negotiated, additive evolution.** Versions are negotiated at hello. New ops, optional fields and codecs are minor; semantic or binary-layout changes are major and rare.
 5. **Profiles, not a monolith.** MAP-Core plus optional profiles. Clients degrade gracefully when a profile is absent.
 6. **Language-neutral wire.** JSON control plane plus tagged binary frames, locked by JSON Schemas and executable conformance vectors. SDKs are conveniences, never the definition.
+
+## Where we could be wrong
+
+We are not sure the profile split is right, that memory and host belong in v1, or
+that capability tokens are enough for multi-tenant gateways. The draft is public
+so people who have built these systems can tell us what we missed.
+
+If you have implemented a sandbox API, a snapshot store or a token model like
+this, we would value a blunt critique more than a star. Open an issue or an RFC.
 
 ## Roles and topology
 
@@ -252,7 +262,7 @@ MAP streams each window independently — clients attach per window, never to a 
 
 The full threat model, token issuance and encryption rules are in [Transport & Security](site/src/content/docs/spec/transport-security.md).
 
-## Conformance: schemas + vectors, not vibes
+## Conformance: schemas and vectors
 
 The prose is normative for humans. These artifacts are normative for machines:
 
@@ -401,7 +411,7 @@ For anything semantic, open an RFC first. Read [CONTRIBUTING.md](CONTRIBUTING.md
 
 ## Trust and license
 
-MAP is [Apache-2.0](LICENSE). Contributions use DCO sign-off, not a CLA. The [TRUST commitments](TRUST.md) are part of the project, not marketing: no phone-home, credentials never transit Mixum infrastructure, content stays in the user's environment, telemetry (if any) lives only in the desktop app and is off by default, the gateway is open source and self-hostable, and portability is a right.
+MAP is [Apache-2.0](LICENSE); the schemas, vectors, SDKs and site content are under the same license. Third-party components keep their own licenses — see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Contributions use DCO sign-off, not a CLA. The [TRUST commitments](TRUST.md) are part of the project, not marketing: no phone-home, credentials never transit Mixum infrastructure, content stays in the user's environment, telemetry (if any) lives only in the desktop app and is off by default, the gateway is open source and self-hostable, and portability is a right.
 
 ---
 
