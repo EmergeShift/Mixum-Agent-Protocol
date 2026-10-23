@@ -1,5 +1,5 @@
 {
-  "$comment": "Envelope conformance vectors. valid: must be accepted. invalid: must be rejected with the stated code.",
+  "$comment": "Envelope conformance vectors. valid: must be accepted. invalid: must be rejected with the stated code; semantic:true cases are enforced by dispatch/state machine, not by envelope.schema.json.",
   "schema": "../schemas/envelope.schema.json",
   "valid": [
     {
@@ -42,8 +42,8 @@
     { "name": "missing ts", "envelope": { "v": 1, "id": "01JBV7W8X5Q3M2N4P6R8T0V3A2", "op": "sys.ping", "payload": {} }, "code": "bad_request" },
     { "name": "payload null", "envelope": { "v": 1, "id": "01JBV7W8X5Q3M2N4P6R8T0V3A3", "op": "sys.ping", "ts": 1696400000123, "payload": null }, "code": "bad_request" },
     { "name": "op not dotted", "envelope": { "v": 1, "id": "01JBV7W8X5Q3M2N4P6R8T0V3A4", "op": "ping", "ts": 1696400000123, "payload": {} }, "code": "bad_request" },
-    { "name": "unknown op must reply unsupported, not crash", "envelope": { "v": 1, "id": "01JBV7W8X5Q3M2N4P6R8T0V3A5", "op": "quantum.entangle", "ts": 1696400000123, "payload": {} }, "code": "unsupported" },
-    { "name": "err reply without code", "envelope": { "v": 1, "id": "01JBV7W8X5Q3M2N4P6R8T0V3A6", "op": "task.get.err", "replyTo": "01JBV7W8X5Q3M2N4P6R8T0V3A2", "ts": 1696400000123, "payload": { "message": "oops" } }, "code": "bad_request" },
+    { "name": "unknown op must reply unsupported, not crash", "semantic": true, "envelope": { "v": 1, "id": "01JBV7W8X5Q3M2N4P6R8T0V3A5", "op": "quantum.entangle", "ts": 1696400000123, "payload": {} }, "code": "unsupported" },
+    { "name": "err reply without code", "semantic": true, "envelope": { "v": 1, "id": "01JBV7W8X5Q3M2N4P6R8T0V3A6", "op": "task.get.err", "replyTo": "01JBV7W8X5Q3M2N4P6R8T0V3A2", "ts": 1696400000123, "payload": { "message": "oops" } }, "code": "bad_request" },
     { "name": "node empty", "envelope": { "v": 1, "id": "01JBV7W8X5Q3M2N4P6R8T0V3B3", "op": "sys.ping", "node": "", "ts": 1696400000123, "payload": {} }, "code": "bad_request" },
     { "name": "node longer than 64 characters", "envelope": { "v": 1, "id": "01JBV7W8X5Q3M2N4P6R8T0V3B4", "op": "sys.ping", "node": "nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn", "ts": 1696400000123, "payload": {} }, "code": "bad_request" },
     { "name": "node contains a colon", "envelope": { "v": 1, "id": "01JBV7W8X5Q3M2N4P6R8T0V3B5", "op": "sys.ping", "node": "mac:mini", "ts": 1696400000123, "payload": {} }, "code": "bad_request" }
