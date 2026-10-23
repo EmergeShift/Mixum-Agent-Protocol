@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mixum-agent-protocol.dev/schemas/privilege.schema.json",
+  "title": "MAP privilege request, decision, list reply and audit record",
+  "description": "Payloads of the Experimental Privilege extension. Envelopes wrap the request/decision/list reply; auditRecord is the Node-local JSONL line written for every terminal outcome.",
+  "oneOf": [
+    { "$ref": "#/$defs/request" },
+    { "$ref": "#/$defs/decision" },
+    { "$ref": "#/$defs/listReply" },
+    { "$ref": "#/$defs/auditRecord" }
+  ],
+  "$defs": {
+    "ulid": {
+      "type": "string",
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+      "description": "Canonical 26-char Crockford base32 ULID"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "Lowercase hex SHA-256 of the executable bytes"
+    },
+    "risk": {
+      "enum": ["package", "destructive", "system", "network", "shell", "unknown"],
+      "description": "Advisory classification shown to the approver. shell is reserved for implementations that still allow shells; conformant Nodes reject those requests before emitting a request event."
+    },
+    "request": {
+      "type": "object",
+      "required": [
+        "id",
+        "taskId",
+        "program",
+        "args",
+        "cwd",
+        "reason",
+        "risk",
+        "createdAt",
+        "expiresAt"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/ulid" },
+        "taskId": {
+          "type": "string",
+          "description": "Requester-supplied task hint. Untrusted: Nodes must not authorize on it; it may be empty or forged."
+        },
+        "peerUid": {
+          "type": ["integer", "null"],
+          "minimum": 0,
+          "description": "Kernel-reported uid of the local sudo client. Present on Linux Nodes; clients must tolerate absence on older Nodes."
+        },
+        "program": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[^\\u0000]+$",
+          "description": "The argv[0] the requester asked for, exactly as displayed to the approver."
+        },
+        "resolved": {
+          "type": "string",
+          "pattern": "^/[^\\u0000]*$",
+          "description": "Absolute, canonicalized executable path pinned at approval time (symlinks resolved). Present on conformant Nodes."
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "args": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[^\\u0000]*$" },
+          "description": "Exact argument vector; one request executes exactly one argv."
+        },
+        "cwd": {
+          "type": "string",
+          "pattern": "^/[^\\u0000]*$",
+          "description": "Absolute working directory after canonicalization."
+        },
+        "reason": {
+          "type": "string",
+          "description": "Agent-supplied justification shown to the approver; may be empty."
+        },
+        "risk": { "$ref": "#/$defs/risk" },
+        "createdAt": { "type": "integer", "minimum": 0, "description": "Unix milliseconds" },
+        "expiresAt": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Unix milliseconds; createdAt + 120000 in the reference Node."
+        }
+      },
+      "additionalProperties": true
+    },
+    "decision": {
+      "type": "object",
+      "required": ["id", "approve"],
+      "properties": {
+        "id": { "$ref": "#/$defs/ulid" },
+        "approve": { "type": "boolean" },
+        "reason": { "type": "string" },
+        "scope": {
+          "enum": ["once"],
+          "default": "once",
+          "description": "Only single-shot approval exists. Other values must be rejected with conflict."
+        },
+        "approver": {
+          "type": "string",
+          "description": "Ignored from clients. The Node records the authenticated Admin session subject; never trust a client-supplied value."
+        }
+      },
+      "additionalProperties": true
+    },
+    "listReply": {
+      "type": "object",
+      "required": ["requests"],
+      "properties": {
+        "requests": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/request" }
+        }
+      },
+      "additionalProperties": true
+    },
+    "auditRecord": {
+      "type": "object",
+      "required": ["ts", "id", "result", "approver", "scope", "reason", "detail", "request"],
+      "properties": {
+        "ts": { "type": "integer", "minimum": 0, "description": "Unix milliseconds" },
+        "id": { "$ref": "#/$defs/ulid" },
+        "result": { "enum": ["executed", "failed", "denied", "timeout", "expired"] },
+        "approver": {
+          "type": "string",
+          "description": "Authenticated Admin subject, or empty when no decision was made."
+        },
+        "scope": { "type": "string", "description": "Decision scope, or empty for timeout/expiry." },
+        "reason": { "type": "string" },
+        "detail": {
+          "type": "string",
+          "description": "exit=<code> for executed, the failure text for failed, otherwise empty."
+        },
+        "request": { "$ref": "#/$defs/request" }
+      },
+      "additionalProperties": true
+    }
+  }
+}

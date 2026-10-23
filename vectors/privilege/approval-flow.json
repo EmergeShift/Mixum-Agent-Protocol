@@ -1,0 +1,507 @@
+{
+  "$comment": "Privilege extension vectors. valid[] must validate against privilege.schema.json; invalid[] must be rejected with the stated code; flow[] is the request/decision/audit state machine executed against a Node with a connected Admin session. ULIDs, timestamps, hashes and paths are illustrative.",
+  "schema": "../schemas/privilege.schema.json",
+  "valid": [
+    {
+      "name": "hardened request pinned to an executable",
+      "kind": "request",
+      "document": {
+        "id": "01JBV9C2Q7R9S1T3V5W7X9Y2Z4",
+        "taskId": "01JBV9C2Q7R9S1T3V5W7X9Y2Z7",
+        "peerUid": 0,
+        "program": "npm",
+        "resolved": "/usr/bin/npm",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "args": ["install", "-g", "typescript"],
+        "cwd": "/var/lib/mixum/work",
+        "reason": "install the project toolchain",
+        "risk": "package",
+        "createdAt": 1790000000000,
+        "expiresAt": 1790000120000
+      }
+    },
+    {
+      "name": "legacy request without the hardened fields",
+      "kind": "request",
+      "$comment": "Pre-hardening Nodes omit resolved/sha256/peerUid; clients must still render and approve them.",
+      "document": {
+        "id": "01JBV9C2Q7R9S1T3V5W7X9Y2Z5",
+        "taskId": "",
+        "program": "id",
+        "args": [],
+        "cwd": "/tmp",
+        "reason": "",
+        "risk": "unknown",
+        "createdAt": 1790000000000,
+        "expiresAt": 1790000120000
+      }
+    },
+    {
+      "name": "approve once",
+      "kind": "decision",
+      "document": {
+        "id": "01JBV9C2Q7R9S1T3V5W7X9Y2Z4",
+        "approve": true,
+        "reason": "reviewed",
+        "scope": "once"
+      }
+    },
+    {
+      "name": "deny with default scope",
+      "kind": "decision",
+      "document": {
+        "id": "01JBV9C2Q7R9S1T3V5W7X9Y2Z4",
+        "approve": false,
+        "reason": "not needed"
+      }
+    },
+    {
+      "name": "pending list",
+      "kind": "listReply",
+      "document": {
+        "requests": [
+          {
+            "id": "01JBV9C2Q7R9S1T3V5W7X9Y2Z4",
+            "taskId": "01JBV9C2Q7R9S1T3V5W7X9Y2Z7",
+            "peerUid": 0,
+            "program": "npm",
+            "resolved": "/usr/bin/npm",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "args": ["install", "-g", "typescript"],
+            "cwd": "/var/lib/mixum/work",
+            "reason": "install the project toolchain",
+            "risk": "package",
+            "createdAt": 1790000000000,
+            "expiresAt": 1790000120000
+          }
+        ]
+      }
+    },
+    {
+      "name": "executed audit record",
+      "kind": "auditRecord",
+      "document": {
+        "ts": 1790000001000,
+        "id": "01JBV9C2Q7R9S1T3V5W7X9Y2Z4",
+        "result": "executed",
+        "approver": "alice",
+        "scope": "once",
+        "reason": "reviewed",
+        "detail": "exit=0",
+        "request": {
+          "id": "01JBV9C2Q7R9S1T3V5W7X9Y2Z4",
+          "taskId": "01JBV9C2Q7R9S1T3V5W7X9Y2Z7",
+          "peerUid": 0,
+          "program": "npm",
+          "resolved": "/usr/bin/npm",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "args": ["install", "-g", "typescript"],
+          "cwd": "/var/lib/mixum/work",
+          "reason": "install the project toolchain",
+          "risk": "package",
+          "createdAt": 1790000000000,
+          "expiresAt": 1790000120000
+        }
+      }
+    },
+    {
+      "name": "timeout audit record has no approver",
+      "kind": "auditRecord",
+      "document": {
+        "ts": 1790000121000,
+        "id": "01JBV9C2Q7R9S1T3V5W7X9Y2Z4",
+        "result": "timeout",
+        "approver": "",
+        "scope": "",
+        "reason": "",
+        "detail": "",
+        "request": {
+          "id": "01JBV9C2Q7R9S1T3V5W7X9Y2Z4",
+          "taskId": "",
+          "program": "id",
+          "args": [],
+          "cwd": "/tmp",
+          "reason": "",
+          "risk": "unknown",
+          "createdAt": 1790000000000,
+          "expiresAt": 1790000120000
+        }
+      }
+    }
+  ],
+  "invalid": [
+    {
+      "name": "request id is not a ULID",
+      "kind": "request",
+      "document": {
+        "id": "not-a-ulid",
+        "taskId": "",
+        "program": "id",
+        "args": [],
+        "cwd": "/tmp",
+        "reason": "",
+        "risk": "unknown",
+        "createdAt": 1790000000000,
+        "expiresAt": 1790000120000
+      },
+      "code": "bad_request"
+    },
+    {
+      "name": "empty program",
+      "kind": "request",
+      "document": {
+        "id": "01JBV9C2Q7R9S1T3V5W7X9Y2Z5",
+        "taskId": "",
+        "program": "",
+        "args": [],
+        "cwd": "/tmp",
+        "reason": "",
+        "risk": "unknown",
+        "createdAt": 1790000000000,
+        "expiresAt": 1790000120000
+      },
+      "code": "bad_request"
+    },
+    {
+      "name": "resolved path is relative",
+      "kind": "request",
+      "document": {
+        "id": "01JBV9C2Q7R9S1T3V5W7X9Y2Z5",
+        "taskId": "",
+        "program": "id",
+        "resolved": "usr/bin/id",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "args": [],
+        "cwd": "/tmp",
+        "reason": "",
+        "risk": "unknown",
+        "createdAt": 1790000000000,
+        "expiresAt": 1790000120000
+      },
+      "code": "bad_request"
+    },
+    {
+      "name": "sha256 is truncated",
+      "kind": "request",
+      "document": {
+        "id": "01JBV9C2Q7R9S1T3V5W7X9Y2Z5",
+        "taskId": "",
+        "program": "id",
+        "resolved": "/usr/bin/id",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b85",
+        "args": [],
+        "cwd": "/tmp",
+        "reason": "",
+        "risk": "unknown",
+        "createdAt": 1790000000000,
+        "expiresAt": 1790000120000
+      },
+      "code": "bad_request"
+    },
+    {
+      "name": "sha256 is uppercase",
+      "kind": "request",
+      "document": {
+        "id": "01JBV9C2Q7R9S1T3V5W7X9Y2Z5",
+        "taskId": "",
+        "program": "id",
+        "resolved": "/usr/bin/id",
+        "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+        "args": [],
+        "cwd": "/tmp",
+        "reason": "",
+        "risk": "unknown",
+        "createdAt": 1790000000000,
+        "expiresAt": 1790000120000
+      },
+      "code": "bad_request"
+    },
+    {
+      "name": "argv contains NUL",
+      "kind": "request",
+      "document": {
+        "id": "01JBV9C2Q7R9S1T3V5W7X9Y2Z5",
+        "taskId": "",
+        "program": "id",
+        "args": ["a\u0000b"],
+        "cwd": "/tmp",
+        "reason": "",
+        "risk": "unknown",
+        "createdAt": 1790000000000,
+        "expiresAt": 1790000120000
+      },
+      "code": "bad_request"
+    },
+    {
+      "name": "cwd is relative",
+      "kind": "request",
+      "document": {
+        "id": "01JBV9C2Q7R9S1T3V5W7X9Y2Z5",
+        "taskId": "",
+        "program": "id",
+        "args": [],
+        "cwd": "work",
+        "reason": "",
+        "risk": "unknown",
+        "createdAt": 1790000000000,
+        "expiresAt": 1790000120000
+      },
+      "code": "bad_request"
+    },
+    {
+      "name": "unknown risk class",
+      "kind": "request",
+      "document": {
+        "id": "01JBV9C2Q7R9S1T3V5W7X9Y2Z5",
+        "taskId": "",
+        "program": "id",
+        "args": [],
+        "cwd": "/tmp",
+        "reason": "",
+        "risk": "root",
+        "createdAt": 1790000000000,
+        "expiresAt": 1790000120000
+      },
+      "code": "bad_request"
+    },
+    {
+      "name": "request without expiresAt",
+      "kind": "request",
+      "document": {
+        "id": "01JBV9C2Q7R9S1T3V5W7X9Y2Z5",
+        "taskId": "",
+        "program": "id",
+        "args": [],
+        "cwd": "/tmp",
+        "reason": "",
+        "risk": "unknown",
+        "createdAt": 1790000000000
+      },
+      "code": "bad_request"
+    },
+    {
+      "name": "decision without approve",
+      "kind": "decision",
+      "document": {
+        "id": "01JBV9C2Q7R9S1T3V5W7X9Y2Z4",
+        "reason": "reviewed"
+      },
+      "code": "bad_request"
+    },
+    {
+      "name": "decision id is not a ULID",
+      "kind": "decision",
+      "document": {
+        "id": "req-1",
+        "approve": true
+      },
+      "code": "bad_request"
+    },
+    {
+      "name": "unsupported scope",
+      "kind": "decision",
+      "document": {
+        "id": "01JBV9C2Q7R9S1T3V5W7X9Y2Z4",
+        "approve": true,
+        "scope": "always"
+      },
+      "code": "conflict"
+    },
+    {
+      "name": "unknown audit result",
+      "kind": "auditRecord",
+      "document": {
+        "ts": 1790000001000,
+        "id": "01JBV9C2Q7R9S1T3V5W7X9Y2Z4",
+        "result": "approved",
+        "approver": "alice",
+        "scope": "once",
+        "reason": "reviewed",
+        "detail": "",
+        "request": {
+          "id": "01JBV9C2Q7R9S1T3V5W7X9Y2Z4",
+          "taskId": "",
+          "program": "id",
+          "args": [],
+          "cwd": "/tmp",
+          "reason": "",
+          "risk": "unknown",
+          "createdAt": 1790000000000,
+          "expiresAt": 1790000120000
+        }
+      },
+      "code": "bad_request"
+    },
+    {
+      "name": "audit record without the request",
+      "kind": "auditRecord",
+      "document": {
+        "ts": 1790000001000,
+        "id": "01JBV9C2Q7R9S1T3V5W7X9Y2Z4",
+        "result": "denied",
+        "approver": "alice",
+        "scope": "once",
+        "reason": "not needed",
+        "detail": ""
+      },
+      "code": "bad_request"
+    },
+    {
+      "name": "list reply with non-array requests",
+      "kind": "listReply",
+      "document": { "requests": "none" },
+      "code": "bad_request"
+    }
+  ],
+  "flow": [
+    {
+      "name": "approve executes exactly once",
+      "request": {
+        "id": "01JBV9C2Q7R9S1T3V5W7X9Y2Z4",
+        "taskId": "01JBV9C2Q7R9S1T3V5W7X9Y2Z7",
+        "peerUid": 0,
+        "program": "id",
+        "resolved": "/usr/bin/id",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "args": ["-u"],
+        "cwd": "/var/lib/mixum/work",
+        "reason": "show the runtime uid",
+        "risk": "unknown",
+        "createdAt": 1790000000000,
+        "expiresAt": 1790000120000
+      },
+      "decision": {
+        "id": "01JBV9C2Q7R9S1T3V5W7X9Y2Z4",
+        "approve": true,
+        "reason": "reviewed",
+        "scope": "once"
+      },
+      "expect": {
+        "decisionReply": { "ok": true },
+        "executed": true,
+        "requester": { "exitCode": 0, "stdout": "0\n", "stderr": "" },
+        "audit": {
+          "result": "executed",
+          "approver": "alice",
+          "scope": "once",
+          "detail": "exit=0"
+        },
+        "secondDecision": "conflict"
+      }
+    },
+    {
+      "name": "deny blocks execution",
+      "request": {
+        "id": "01JBV9C2Q7R9S1T3V5W7X9Y2Z5",
+        "taskId": "",
+        "program": "id",
+        "args": ["-u"],
+        "cwd": "/tmp",
+        "reason": "should not run",
+        "risk": "unknown",
+        "createdAt": 1790000000000,
+        "expiresAt": 1790000120000
+      },
+      "decision": {
+        "id": "01JBV9C2Q7R9S1T3V5W7X9Y2Z5",
+        "approve": false,
+        "reason": "not needed"
+      },
+      "expect": {
+        "decisionReply": { "ok": true },
+        "executed": false,
+        "requesterExitCode": 126,
+        "audit": {
+          "result": "denied",
+          "approver": "alice",
+          "scope": "once",
+          "reason": "not needed",
+          "detail": ""
+        }
+      }
+    },
+    {
+      "name": "timeout denies by default",
+      "request": {
+        "id": "01JBV9C2Q7R9S1T3V5W7X9Y2Z6",
+        "taskId": "",
+        "program": "id",
+        "args": ["-u"],
+        "cwd": "/tmp",
+        "reason": "nobody approves",
+        "risk": "unknown",
+        "createdAt": 1790000000000,
+        "expiresAt": 1790000120000
+      },
+      "decision": null,
+      "advanceMs": 120000,
+      "expect": {
+        "executed": false,
+        "requesterExitCode": 126,
+        "audit": {
+          "result": "timeout",
+          "approver": "",
+          "scope": "",
+          "detail": ""
+        }
+      }
+    },
+    {
+      "name": "late decision after expiry",
+      "request": {
+        "id": "01JBV9C2Q7R9S1T3V5W7X9Y2Z6",
+        "taskId": "",
+        "program": "id",
+        "args": ["-u"],
+        "cwd": "/tmp",
+        "reason": "clock already moved",
+        "risk": "unknown",
+        "createdAt": 1790000000000,
+        "expiresAt": 1790000120000
+      },
+      "decision": {
+        "id": "01JBV9C2Q7R9S1T3V5W7X9Y2Z6",
+        "approve": true,
+        "reason": "reviewed too late",
+        "scope": "once"
+      },
+      "decisionAtMs": 120001,
+      "expect": {
+        "decisionReply": "conflict",
+        "executed": false,
+        "audit": {
+          "result": "expired",
+          "approver": "alice",
+          "scope": "once",
+          "detail": ""
+        }
+      }
+    }
+  ],
+  "rejectedBeforeApproval": [
+    {
+      "name": "shell",
+      "program": "sh",
+      "args": ["-c", "id"],
+      "expect": { "agentExitCode": 126, "noRequestEvent": true }
+    },
+    {
+      "name": "relative program",
+      "program": "./id",
+      "args": [],
+      "expect": { "agentExitCode": 126, "noRequestEvent": true }
+    },
+    {
+      "name": "executable outside trusted roots",
+      "program": "/tmp/evil",
+      "args": [],
+      "expect": { "agentExitCode": 126, "noRequestEvent": true }
+    },
+    {
+      "name": "NUL in argv",
+      "program": "id",
+      "args": ["a\u0000b"],
+      "expect": { "agentExitCode": 126, "noRequestEvent": true }
+    }
+  ]
+}
