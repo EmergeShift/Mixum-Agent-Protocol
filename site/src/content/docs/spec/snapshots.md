@@ -21,7 +21,7 @@ v1 restriction: a pure `memory` snapshot may not be restored on its own — it m
 
 - Files are split into chunks of **1 MiB nominal** (tail chunk may be shorter). The chunk id is the **SHA-256 of the plaintext chunk** — always, regardless of on-disk compression or encryption.
 - On disk: `objects/<h[:2]>/<h[2:]>`, zstd-compressed, written to a temp file then atomically renamed.
-- Optional at-rest encryption: AES-256-GCM per [Transport & Security](/spec/transport-security/#at-rest-encryption-optional-normative-when-enabled).
+- Optional at-rest encryption: AES-256-GCM per [Transport & Security](/map/spec/transport-security/#at-rest-encryption-optional-normative-when-enabled).
 - Reads verify: recomputed hash must equal the address; mismatch = corruption, surfaced as `snapshot_invalid`.
 
 ## Manifest

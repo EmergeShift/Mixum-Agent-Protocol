@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://map.emergeshift.com/schemas/memory-record.schema.json",
-  "$comment": "Hosted at https://map.emergeshift.com (under construction; see issue #11).",
+  "$id": "https://docs.emergeshift.com/map/schemas/memory-record.schema.json",
+  "$comment": "Hosted at https://docs.emergeshift.com/map (under construction; see issue #11).",
   "title": "MAP memory record (MAP-Memory)",
   "type": "object",
   "required": ["provider", "kind", "content", "scope", "createdAt", "updatedAt"],

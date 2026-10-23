@@ -68,9 +68,9 @@ A binary frame carries **one record**: `[channel tag: u8][record]`.
 
 | Tag | Channel | Record layout |
 |---|---|---|
-| `0x01` | video | [Window frame header](/spec/display/#window-frame-header) + encoded frame |
+| `0x01` | video | [Window frame header](/map/spec/display/#window-frame-header) + encoded frame |
 | `0x02` | audio | Reserved (no layout in v1) |
-| `0x03` | chunk | `[32 bytes: plaintext SHA-256][chunk bytes]` — see [Mobility](/spec/mobility/) |
+| `0x03` | chunk | `[32 bytes: plaintext SHA-256][chunk bytes]` — see [Mobility](/map/spec/mobility/) |
 | `0x04` | stdio | `[stream: u8 (1=stdout, 2=stderr)][task ULID: 16 bytes binary][bytes]` |
 
 Delivery semantics per channel:

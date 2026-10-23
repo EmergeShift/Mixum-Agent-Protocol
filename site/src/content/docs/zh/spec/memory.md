@@ -9,7 +9,7 @@ Agent 会积累上下文——偏好、事实、操作步骤、事件历史。�
 
 ## 目标
 
-1. **可移植**——记录在 Node 之间流动（经[可迁移性](/zh/spec/mobility/)或导入导出）。
+1. **可移植**——记录在 Node 之间流动（经[可迁移性](/map/zh/spec/mobility/)或导入导出）。
 2. **平台互操作**——主流平台的记忆由导入器转成 MAP 记录；协议本身保持中立。
 3. **用户所有**——记忆存在用户自己的 Node，不在厂商云里。隐私是架构性的。
 
@@ -72,7 +72,7 @@ Agent 会积累上下文——偏好、事实、操作步骤、事件历史。�
 ## 存储与可迁移性
 
 - 记忆库在 Node 本地（`dataDir/memory`），**在工作区之外**：默认不随 `disk` 快照走。
-- 它的流动靠显式选择：`snap.push { includeMemory: true }` 让记忆库的块随行（[可迁移性](/zh/spec/mobility/)），或者 `mem.export` / `mem.import` 往返搬运。
+- 它的流动靠显式选择：`snap.push { includeMemory: true }` 让记忆库的块随行（[可迁移性](/map/zh/spec/mobility/)），或者 `mem.export` / `mem.import` 往返搬运。
 - 逐记录 ACL 与静态加密为预留项（v1.1）；记忆库继承 Node 的静态加密姿态。
 
 ## 平台兼容

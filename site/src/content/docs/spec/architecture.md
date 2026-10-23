@@ -53,7 +53,7 @@ An implementation declares the profiles it implements; `hello.ok` echoes the set
 | **MAP-Host** | `vm.*`, images, bootstrap handoff | Stable at v1.0 |
 | MAP-Cluster | Multi-node scheduling via a Gateway | Reserved |
 
-Conformance is scoped: an implementation claims exactly what it passed vectors for, e.g. *"MAP v1 Core + Display conformant"*. See [Versioning & Governance](/spec/versioning-governance/).
+Conformance is scoped: an implementation claims exactly what it passed vectors for, e.g. *"MAP v1 Core + Display conformant"*. See [Versioning & Governance](/map/spec/versioning-governance/).
 
 ## The capability model
 
@@ -72,7 +72,7 @@ Authorization is fully capability-based. A connection holds exactly the capabili
 | `vm.manage` | Create, start/stop, delete VMs and images (Host role) |
 | `admin` | Everything; used for bootstrap and derivation of scoped tokens |
 
-Token claims may **bind** a capability further: `taskId` (operate only that task; also forbids submitting new tasks), `windows` (only those window ids), `mem.providers` (only those memory providers). See [Transport & Security](/spec/transport-security/).
+Token claims may **bind** a capability further: `taskId` (operate only that task; also forbids submitting new tasks), `windows` (only those window ids), `mem.providers` (only those memory providers). See [Transport & Security](/map/spec/transport-security/).
 
 Typical grants:
 

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://map.emergeshift.com/schemas/privilege.schema.json",
-  "$comment": "Hosted at https://map.emergeshift.com (under construction; see issue #11).",
+  "$id": "https://docs.emergeshift.com/map/schemas/privilege.schema.json",
+  "$comment": "Hosted at https://docs.emergeshift.com/map (under construction; see issue #11).",
   "title": "MAP privilege request, decision, list reply and audit record",
   "description": "Payloads of the Experimental Privilege extension. Envelopes wrap the request/decision/list reply; auditRecord is the Node-local JSONL line written for every terminal outcome.",
   "oneOf": [

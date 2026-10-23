@@ -37,7 +37,7 @@ creating ──▶ stopped ──▶ starting ──▶ running ──▶ stoppi
                 └────────────────────────┴────▶ failed
 ```
 
-`suspended` (VM-level checkpoint → [Mobility](/spec/mobility/) hybrid snapshot of the whole VM) is reserved for v1.1.
+`suspended` (VM-level checkpoint → [Mobility](/map/spec/mobility/) hybrid snapshot of the whole VM) is reserved for v1.1.
 
 ## Ops
 
