@@ -14,11 +14,16 @@ hero:
       icon: external
 ---
 
-import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+import { Aside, Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
 MCP 标准化了 agent 与**工具**的对话方式。MAP 标准化的是 agent 与其操作者同**环境**的对话方式：在 VM 或容器里执行任务、用快照树进行时间旅行、把整个工作状态在机器间随时搬走、从任何设备观看并接管 GUI 窗口、以及让 agent 记忆跟着人走。
 
 每项能力都由最小权限能力令牌守卫；所有产物按内容寻址；每次语义变更都有版本协商。
+
+<Aside type="caution" title="Alpha 草稿">
+MAP v1 还是草稿。控制面能跑，但 memory/host profile、SDK 和部分文档仍在变化。
+我们提前发布，是希望在 v1.0 之前听到反对意见。
+</Aside>
 
 <CardGrid stagger>
   <Card title="有生命周期的任务">

@@ -14,9 +14,19 @@
   <p><a href="README.zh-CN.md">简体中文</a> · <strong>English</strong></p>
 </div>
 
-> **Status: v1 Draft.** The wire surface is implemented and exercised by the [mixumOS](https://github.com/EmergeShift/mixumOS) reference Node and the [MixumART](https://github.com/EmergeShift/MixumART) client. The prose, schemas and vectors are frozen only when v1.0 ships; the [stability markers](site/src/content/docs/spec/versioning-governance.md) say exactly what may still move.
+> **Status: v1 Draft (alpha).** The wire surface is implemented and exercised by the [mixumOS](https://github.com/EmergeShift/mixumOS) reference Node and the [MixumART](https://github.com/EmergeShift/MixumART) client, but this is a draft, not a frozen standard. Memory/Host profiles, SDKs and parts of the prose are still moving. We publish early so implementers can push back before v1.0. The [stability markers](site/src/content/docs/spec/versioning-governance.md) say exactly what may still change.
 
 ---
+
+## Alpha, honestly
+
+MAP is a draft. The control plane works and two independent implementations talk
+to each other, but the spec is not finished: memory and host profiles are not
+frozen, the SDKs are skeletons, and some pages are ahead of the code.
+
+We are a small team. The spec is the product, so it will keep changing until
+v1.0 — that is the point of publishing it now. If something is underspecified or
+wrong, open an issue or an RFC; disagreement is useful while it is still cheap.
 
 ## The missing layer
 

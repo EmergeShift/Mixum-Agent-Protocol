@@ -15,7 +15,7 @@ hero:
       icon: external
 ---
 
-import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+import { Aside, Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
 MCP standardized how agents talk to **tools**. MAP standardizes how agents and their
 operators talk to **environments**: run a task inside a VM or container, travel through
@@ -24,6 +24,12 @@ and steer GUI windows from anywhere, and carry agent memory with you.
 
 Every capability is guarded by least-privilege capability tokens. Every artifact is
 content-addressed. Every semantic change is versioned and negotiated.
+
+<Aside type="caution" title="Alpha draft">
+MAP v1 is a draft. The control plane works, but memory/host profiles, the SDKs
+and some docs are still moving. We publish early so implementers can push back
+before v1.0.
+</Aside>
 
 <CardGrid stagger>
   <Card title="Tasks with a lifecycle">

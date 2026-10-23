@@ -16,9 +16,15 @@
 
 > 本文件是英文 README 的中文翻译。**规范正文以英文为准**；如中英文有冲突，以英文为准。
 >
-> **状态：v1 Draft。** 线协议已由 [mixumOS](https://github.com/EmergeShift/mixumOS) 参考 Node 与 [MixumART](https://github.com/EmergeShift/MixumART) 客户端实现并实际跑通。正文、schema 与向量要到 v1.0 才冻结；[稳定性标记](site/src/content/docs/spec/versioning-governance.md)明确说明了哪些内容仍可能变化。
+> **状态：v1 Draft（alpha）。** 线协议已由 [mixumOS](https://github.com/EmergeShift/mixumOS) 参考 Node 与 [MixumART](https://github.com/EmergeShift/MixumART) 客户端实现并实际跑通，但这是一份草稿，不是冻结的标准。Memory/Host profile、SDK 和部分正文仍在变化。我们提前发布，是希望在 v1.0 之前听到反对意见。[稳定性标记](site/src/content/docs/spec/versioning-governance.md)明确说明了哪些内容仍可能变化。
 
 ---
+
+## 先说清楚：这是 alpha
+
+MAP 是草稿。控制面能跑，两个独立实现也能互通，但规范还没完成：memory 和 host profile 没有冻结，SDK 还是骨架，部分文档跑在代码前面。
+
+我们是一个小团队。规范就是产品，所以它在 v1.0 之前会一直变——这正是现在发布的理由。如果哪里定义不清或写错了，欢迎开 issue 或 RFC；在还便宜的时候提出反对，最有价值。
 
 ## 缺失的那一层
 
