@@ -1,5 +1,7 @@
 # Mixum Agent Protocol (MAP)
 
+[![ci](https://github.com/EmergeShift/Mixum-Agent-Protocol/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/EmergeShift/Mixum-Agent-Protocol/actions/workflows/ci.yml)
+
 **MAP** is an open protocol that connects AI agents to isolated, snapshot-capable computing environments — the "world" an agent lives in — across macOS, Windows and Linux hosts, from a laptop to the cloud.
 
 MCP standardized how agents talk to *tools*. MAP standardizes how agents and their operators talk to *environments*: running tasks in a VM or container, traveling through time with snapshot trees, moving a whole working state between machines, watching and steering GUI windows, and carrying agent memory with them.
@@ -39,6 +41,7 @@ Agent runtimes today are closed: every sandbox vendor invents private APIs for t
 ├── schemas/         JSON Schemas (normative machine-readable forms)
 ├── vectors/         Conformance vectors (structural, language-neutral)
 ├── sdk/             SDKs: sdk/typescript, sdk/rust (map-core/client/server/snapshot/cli + .mart tooling)
+├── scripts/         Repository checks (JSON Schema + vector validation)
 └── rfcs/            Design process: RFCs and template
 ```
 

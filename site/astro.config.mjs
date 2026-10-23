@@ -37,6 +37,7 @@ export default defineConfig({
             'spec/snapshots',
             'spec/mobility',
             'spec/display',
+            'spec/privilege',
             'spec/memory',
             'spec/vm-host',
             'spec/versioning-governance',

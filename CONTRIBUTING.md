@@ -22,14 +22,37 @@ Anything that changes semantics, adds an op, or adds a capability requires an RF
 
 ## Development
 
+CI runs four jobs on every push to `main` and every pull request. Run the same
+checks locally before opening a PR:
+
 ```bash
+# schemas + vectors
+pip install jsonschema
+python scripts/validate_artifacts.py
+
+# Rust SDK
+cd sdk/rust
+cargo fmt --all --check
+cargo clippy --workspace --all-targets -- -D warnings
+cargo test --workspace
+
+# TypeScript SDK
+cd sdk/typescript
+npm ci
+npm run check
+npm test
+
+# docs site
 cd site
-npm install
-npm run dev      # docs site at localhost:4321
+npm ci
+npm run dev      # local preview at localhost:4321
 npm run build    # production build (also our link/typos sanity pass)
 ```
 
-Schemas are plain JSON Schema draft 2020-12. Validate any example with your favorite validator.
+Schemas are plain JSON Schema draft 2020-12. Every schema change needs a vector
+under `vectors/`; `scripts/validate_artifacts.py` rejects valid cases and checks
+that invalid cases are actually invalid (cases marked `"semantic": true` are
+enforced by dispatch/state machine instead of the schema).
 
 SDKs in `sdk/` are skeletons until v1.0; PRs there should mirror the spec and add tests, not invent behavior.
 

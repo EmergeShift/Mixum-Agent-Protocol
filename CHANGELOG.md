@@ -26,9 +26,20 @@ Format based on [Keep a Changelog](https://keepachangelog.com/); the protocol it
 - Documentation site (Astro Starlight) with English normative text and Chinese
   translations of overview and core concept pages.
 - RFC 0001: MAP v1 scope and relation to the mixumOS wire protocol.
+- Privilege extension (`spec/privilege`): one-shot root requests, approval and
+  the audit boundary. Added `schemas/privilege.schema.json` and
+  `vectors/privilege/approval-flow.json` covering approve/deny/timeout/expiry,
+  executable pinning and audit records; the docs sidebar now links the page.
+- CI: four jobs (schema/vector validation, Rust SDK, TypeScript SDK, docs site)
+  and `scripts/validate_artifacts.py`, the repository schema/vector checker that
+  runs locally and in CI.
 
 ### Changed
 
+- Privilege spec aligned with the hardened reference Node: pinned `resolved`
+  path + `sha256`, `peerUid`, approver provenance, late decisions recorded as
+  `expired`, audit record shape and request limits. Fixed the example expiry
+  (`createdAt + 120000` ms, previously +120 ms).
 - Display: documented the private Node↔compositor control channel's
   forward-compatibility rule — unknown record types are ignored and counted;
   framing/payload validation errors are an explicit error path (minor
