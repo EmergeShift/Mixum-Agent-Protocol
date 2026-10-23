@@ -68,7 +68,7 @@ console.log("head:", tree.head, "nodes:", tree.nodes.length);
 
 ## Next steps
 
-- [What is MAP?](/spec/overview/) — the 5-minute mental model
-- [Tasks](/spec/tasks/) — lifecycle, events, the human-input channel
-- [Snapshots & Time Travel](/spec/snapshots/) — tree semantics
-- [SDKs](/sdk/) — TypeScript & Rust skeletons
+- [What is MAP?](/map/spec/overview/) — the 5-minute mental model
+- [Tasks](/map/spec/tasks/) — lifecycle, events, the human-input channel
+- [Snapshots & Time Travel](/map/spec/snapshots/) — tree semantics
+- [SDKs](/map/sdk/) — TypeScript & Rust skeletons

@@ -9,7 +9,7 @@ Agents accumulate context — preferences, facts, procedures, episode history. T
 
 ## Goals
 
-1. **Portability** — records move between Nodes (via [Mobility](/spec/mobility/) or export/import).
+1. **Portability** — records move between Nodes (via [Mobility](/map/spec/mobility/) or export/import).
 2. **Platform interop** — major platforms' memories are converted into MAP records by importers; the protocol itself stays neutral.
 3. **User ownership** — memory lives in the user's Node, not in a vendor's cloud. Privacy is architectural.
 
@@ -72,7 +72,7 @@ Notes:
 ## Storage & mobility
 
 - The memory store is node-local (`dataDir/memory`), **outside the workspace**: it is not part of `disk` snapshots by default.
-- It travels by explicit choice: `snap.push { includeMemory: true }` carries the store's chunks ([Mobility](/spec/mobility/#memory-with-mobility)), or via `mem.export` / `mem.import` round-trips.
+- It travels by explicit choice: `snap.push { includeMemory: true }` carries the store's chunks ([Mobility](/map/spec/mobility/#memory-with-mobility)), or via `mem.export` / `mem.import` round-trips.
 - Per-record ACLs and encrypted-at-rest records are reserved (v1.1); the store inherits the Node's at-rest encryption posture.
 
 ## Platform compatibility

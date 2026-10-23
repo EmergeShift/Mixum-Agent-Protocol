@@ -53,7 +53,7 @@ MAP 分四个角色。一个进程可以同时扮演多个（Host 通常也是�
 | **MAP-Host** | `vm.*`、镜像、引导交接 | v1.0 时转 Stable |
 | MAP-Cluster | 经 Gateway 的多节点调度 | 预留 |
 
-一致性按范围声明：实现只声称自己通过向量测试的范围，例如「MAP v1 Core + Display conformant」。见[版本与治理](/zh/spec/versioning-governance/)。
+一致性按范围声明：实现只声称自己通过向量测试的范围，例如「MAP v1 Core + Display conformant」。见[版本与治理](/map/zh/spec/versioning-governance/)。
 
 ## 能力模型
 
@@ -72,7 +72,7 @@ MAP 分四个角色。一个进程可以同时扮演多个（Host 通常也是�
 | `vm.manage` | 创建、启停、删除 VM 与镜像（Host 角色） |
 | `admin` | 全部能力；用于引导与派生受限令牌 |
 
-令牌 claims 可以进一步**绑定**能力：`taskId`（只能操作该任务，同时禁止提交新任务）、`windows`（只能操作这些窗口）、`mem.providers`（只能访问这些记忆 provider）。见[传输与安全](/zh/spec/transport-security/)。
+令牌 claims 可以进一步**绑定**能力：`taskId`（只能操作该任务，同时禁止提交新任务）、`windows`（只能操作这些窗口）、`mem.providers`（只能访问这些记忆 provider）。见[传输与安全](/map/zh/spec/transport-security/)。
 
 典型授予：
 

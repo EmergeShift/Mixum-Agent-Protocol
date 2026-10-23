@@ -3,7 +3,7 @@ title: SDKs
 description: TypeScript and Rust SDK skeletons for MAP clients and tooling.
 ---
 
-SDKs are conveniences over the wire; the [specification](/spec/overview/) is always the definition. Both SDKs ship as **skeletons** with the core types and client structure; the wire behavior they must satisfy is exactly what the [schemas](/artifacts/) and vectors lock.
+SDKs are conveniences over the wire; the [specification](/map/spec/overview/) is always the definition. Both SDKs ship as **skeletons** with the core types and client structure; the wire behavior they must satisfy is exactly what the [schemas](/map/artifacts/) and vectors lock.
 
 ## TypeScript — `@mixum/map`
 

@@ -9,7 +9,7 @@ Stability: **Stable**.
 
 - The only transport is **WebSocket over TLS 1.3** at `wss://<host>:<port>/ws`. Plaintext `ws://` exists in test code only and must never be enabled by a conformant build.
 - Clients request the subprotocol **`map.v1`**; servers must select it or reject the connection.
-- Frame size limits: control (text) frames ≤ **32 MiB**; binary records ≤ **16 MiB** per record (a frame may carry one record; see [Envelope & Framing](/spec/envelope/)).
+- Frame size limits: control (text) frames ≤ **32 MiB**; binary records ≤ **16 MiB** per record (a frame may carry one record; see [Envelope & Framing](/map/spec/envelope/)).
 - Rate limiting: token bucket per connection, default **50 messages/s, burst 100**. Exceeding it yields `session.err/rate_limited`; sustained flooding is a disconnect.
 - Slow consumers: a subscriber that stops reading a frame channel is disconnected after a server-defined grace period (default 2 s) to protect brokers.
 
@@ -32,7 +32,7 @@ The signing key is the Node identity key. Payload claims:
 | Claim | Type | Meaning |
 |---|---|---|
 | `sub` | string | Subject: device or client identity, e.g. `"iphone-15"`, `"mixumart-desktop"` |
-| `caps` | string[] | Capability strings (see [Architecture](/spec/architecture/#the-capability-model)) |
+| `caps` | string[] | Capability strings (see [Architecture](/map/spec/architecture/#the-capability-model)) |
 | `iat`, `exp` | int | Issued-at / expiry, unix seconds. Expired tokens fail as `unauthorized` |
 | `jti` | string? | Unique token id, reserved for revocation lists (not required in v1) |
 | `taskId` | string? | Bind all task operations to this task; also **forbids `task.submit`** |
@@ -48,7 +48,7 @@ Binding rules:
 ### Issuance
 
 - On first start the Node generates a **bootstrap admin token** (10-year TTL by default) and stores it 0600 alongside the identity key. Operators derive scoped tokens from it; derivation is an implementation concern (CLI or Host UI), the wire only consumes tokens.
-- On the **Host** path, `vm.attach` returns a short-TTL bootstrap token for the VM's Node — the Host vouches for the client. See [VM & Host](/spec/vm-host/).
+- On the **Host** path, `vm.attach` returns a short-TTL bootstrap token for the VM's Node — the Host vouches for the client. See [VM & Host](/map/spec/vm-host/).
 - Sync peers receive a dedicated `snap.sync` token with an independent TTL.
 
 ## Limits & defaults

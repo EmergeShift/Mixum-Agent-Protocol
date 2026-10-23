@@ -1,8 +1,10 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 
+// Under construction: deploy under https://docs.emergeshift.com/map (issue #11).
 export default defineConfig({
-  site: 'https://mixum-agent-protocol.dev',
+  site: 'https://docs.emergeshift.com',
+  base: '/map',
   integrations: [
     starlight({
       title: 'Mixum Agent Protocol',

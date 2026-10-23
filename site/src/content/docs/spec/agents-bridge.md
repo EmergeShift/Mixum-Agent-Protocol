@@ -45,7 +45,7 @@ The runner starts the agent process with the instruction on **stdin**; the agent
 | `log` | `{ line }` | Progress narration (surfaced as `task.event/log`) |
 | `progress` | `{ pct?, step? }` | Progress update |
 | `exec` | `{ id, argv, cwd?, env?, timeoutMs? }` | Request command execution — **the only world access** |
-| `input.request` | `{ id, prompt, choices?, sensitive?, timeoutMs? }` | Ask the human (see [Tasks](/spec/tasks/#the-human-input-channel)) |
+| `input.request` | `{ id, prompt, choices?, sensitive?, timeoutMs? }` | Ask the human (see [Tasks](/map/spec/tasks/#the-human-input-channel)) |
 | `done` | `{ result? }` | Task succeeded |
 | `fail` | `{ error, code? }` | Task failed |
 
@@ -82,7 +82,7 @@ The runner starts the agent with a minimal environment (no inherited shell histo
 
 - When the agent opens a GUI application (typically via `exec`), the runner marks the new window `mode: "agent"`: **anyone may watch, no one may inject** (input injection replies `conflict`).
 - The agent drives its own GUI through `exec` (CLI automation tools) or a Node's native input API for builtin drivers.
-- A user may claim a window (`display.takeover { action: "claim" }`): the window flips to `mode: "user"`, the runner forwards `suspend` to the agent. Releasing returns it to `free` and the task may resume normally. See [Display](/spec/display/).
+- A user may claim a window (`display.takeover { action: "claim" }`): the window flips to `mode: "user"`, the runner forwards `suspend` to the agent. Releasing returns it to `free` and the task may resume normally. See [Display](/map/spec/display/).
 
 ## Conformance
 

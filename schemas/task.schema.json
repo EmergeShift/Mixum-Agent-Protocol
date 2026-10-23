@@ -1,6 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://mixum-agent-protocol.dev/schemas/task.schema.json",
+  "$id": "https://docs.emergeshift.com/map/schemas/task.schema.json",
+  "$comment": "Hosted at https://docs.emergeshift.com/map (under construction; see issue #11).",
   "title": "MAP Task object and task.event",
   "oneOf": [{ "$ref": "#/$defs/task" }, { "$ref": "#/$defs/event" }],
   "$defs": {

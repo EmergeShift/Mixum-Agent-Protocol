@@ -1,6 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://mixum-agent-protocol.dev/schemas/snapshot-manifest.schema.json",
+  "$id": "https://docs.emergeshift.com/map/schemas/snapshot-manifest.schema.json",
+  "$comment": "Hosted at https://docs.emergeshift.com/map (under construction; see issue #11).",
   "title": "MAP snapshot manifest",
   "type": "object",
   "required": ["version", "files", "dirs"],

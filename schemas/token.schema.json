@@ -1,6 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://mixum-agent-protocol.dev/schemas/token.schema.json",
+  "$id": "https://docs.emergeshift.com/map/schemas/token.schema.json",
+  "$comment": "Hosted at https://docs.emergeshift.com/map (under construction; see issue #11).",
   "title": "MAP capability token claims (map1.)",
   "type": "object",
   "required": ["sub", "caps", "iat", "exp"],
