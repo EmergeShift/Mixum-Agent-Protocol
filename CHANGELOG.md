@@ -30,6 +30,9 @@ Format based on [Keep a Changelog](https://keepachangelog.com/); the protocol it
   the audit boundary. Added `schemas/privilege.schema.json` and
   `vectors/privilege/approval-flow.json` covering approve/deny/timeout/expiry,
   executable pinning and audit records; the docs sidebar now links the page.
+- CI: four jobs (schema/vector validation, Rust SDK, TypeScript SDK, docs site)
+  and `scripts/validate_artifacts.py`, the repository schema/vector checker that
+  runs locally and in CI.
 
 ### Changed
 

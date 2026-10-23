@@ -13,5 +13,7 @@ Structural, language-neutral conformance vectors. A conformant implementation mu
 Rules:
 
 - ULIDs and timestamps in vectors are **examples**; implementations must accept any conformant value.
+- `invalid` cases marked `"semantic": true` are enforced by dispatch or the state machine, not by the JSON Schema; the artifact check below only asserts schema rejection for unmarked cases.
 - Vector files are data, not tests: each repo wires them into its own test harness (JSON Schema validation + state-machine execution).
+- Repository check: `python scripts/validate_artifacts.py` (requires `jsonschema`) validates every schema and vector. CI runs the same script.
 - Changes to vectors that tighten behavior require an RFC ([see governance](../../GOVERNANCE.md)).
