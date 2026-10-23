@@ -1,6 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://mixum-agent-protocol.dev/schemas/bridge-message.schema.json",
+  "$id": "https://map.emergeshift.com/schemas/bridge-message.schema.json",
+  "$comment": "Hosted at https://map.emergeshift.com (under construction; see issue #11).",
   "title": "MAP-Bridge messages (line-delimited JSON, runner <-> agent)",
   "oneOf": [
     { "$ref": "#/$defs/runnerToAgent" },
