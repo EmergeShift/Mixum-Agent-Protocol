@@ -368,6 +368,7 @@ npm run dev      # http://localhost:4321
 npm run build    # production build, also the link/typo sanity pass
 ```
 
+- **Documentation map:** [DOCS.md](DOCS.md) lists every spec page, its stability, and whether a Chinese translation exists.
 - **Chinese translations** of the overview and core concepts live under `site/src/content/docs/zh/`. The English text is normative.
 
 ## Versioning, RFCs and governance
