@@ -9,8 +9,8 @@ A Node does not give an agent a root shell. Agents run as an unprivileged task u
 a privileged operation is an explicit request that a human (or a CLI holding an
 Admin token) approves or denies.
 
-Machine-readable forms: [`privilege.schema.json`](https://github.com/ashreo/Mixum-Agent-Protocol/blob/main/schemas/privilege.schema.json)
-and the [approval-flow vectors](https://github.com/ashreo/Mixum-Agent-Protocol/blob/main/vectors/privilege/approval-flow.json).
+Machine-readable forms: [`privilege.schema.json`](https://github.com/EmergeShift/Mixum-Agent-Protocol/blob/main/schemas/privilege.schema.json)
+and the [approval-flow vectors](https://github.com/EmergeShift/Mixum-Agent-Protocol/blob/main/vectors/privilege/approval-flow.json).
 
 ## Request event
 

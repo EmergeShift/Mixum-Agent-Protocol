@@ -7,7 +7,7 @@ SDKs are conveniences over the wire; the [specification](/spec/overview/) is alw
 
 ## TypeScript — `@mixum/map`
 
- [`sdk/typescript/`](https://github.com/ashreo/Mixum-Agent-Protocol/tree/main/sdk/typescript)
+ [`sdk/typescript/`](https://github.com/EmergeShift/Mixum-Agent-Protocol/tree/main/sdk/typescript)
 
 ```ts
 import { MapClient } from "@mixum/map";
@@ -25,7 +25,7 @@ Structure: `src/types.ts` (wire types mirroring the schemas), `src/errors.ts` (`
 
 ## Rust — `map-core`
 
- [`sdk/rust/`](https://github.com/ashreo/Mixum-Agent-Protocol/tree/main/sdk/rust)
+ [`sdk/rust/`](https://github.com/EmergeShift/Mixum-Agent-Protocol/tree/main/sdk/rust)
 
 ```rust
 use map_core::{Envelope, Task, SnapNode};

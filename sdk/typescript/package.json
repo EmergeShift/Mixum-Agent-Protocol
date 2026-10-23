@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Mixum Agent Protocol (MAP) client SDK — TypeScript",
   "license": "Apache-2.0",
-  "repository": "github:ashreo/Mixum-Agent-Protocol",
+  "repository": "github:EmergeShift/Mixum-Agent-Protocol",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

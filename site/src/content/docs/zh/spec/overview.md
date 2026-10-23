@@ -23,9 +23,9 @@ MCP 标准化了 agent↔工具这条边，MAP 标准化 agent↔环境这条边
 
 | 项目 | 角色 | MAP 一致性 |
 |---|---|---|
-| [mixumOS](https://github.com/ashreo/mixumOS) | 系统基座：基于 Arch 的 Agent OS 发行版。跑着 `mixum-agentd` + `mixcomp` 的容器/VM 是参考 **Node** 实现。 | Core、Display、Mobility（参考实现） |
+| [mixumOS](https://github.com/EmergeShift/mixumOS) | 系统基座：基于 Arch 的 Agent OS 发行版。跑着 `mixum-agentd` + `mixcomp` 的容器/VM 是参考 **Node** 实现。 | Core、Display、Mobility（参考实现） |
 | **Mixum Agent Protocol**（本仓库） | 契约本身：正典规范、JSON Schema、一致性向量、SDK。 | — |
-| [Mixum Agent Env (MixumART)](https://github.com/ashreo/mixum-Agent-Env) | 桌面 GUI 与配套环境：macOS/Windows/Linux 上的 VM 生命周期管理、agent 平台连接器。参考 **Host** + **Client**。 | Host、Core client |
+| [Mixum Agent Env (MixumART)](https://github.com/EmergeShift/MixumART) | 桌面 GUI 与配套环境：macOS/Windows/Linux 上的 VM 生命周期管理、agent 平台连接器。参考 **Host** + **Client**。 | Host、Core client |
 
 ## 设计原则
 

@@ -6,7 +6,7 @@
 
 MCP standardized how agents talk to *tools*. MAP standardizes how agents and their operators talk to *environments*: running tasks in a VM or container, traveling through time with snapshot trees, moving a whole working state between machines, watching and steering GUI windows, and carrying agent memory with them.
 
-> Status: **v1 Draft**. The wire surface is implemented and battle-tested by [mixumOS](https://github.com/ashreo/mixumOS); this repository formalizes it as a vendor-neutral specification.
+> Status: **v1 Draft**. The wire surface is implemented and battle-tested by [mixumOS](https://github.com/EmergeShift/mixumOS); this repository formalizes it as a vendor-neutral specification.
 
 ## Why MAP
 
@@ -21,9 +21,9 @@ Agent runtimes today are closed: every sandbox vendor invents private APIs for t
 
 | Project | Role |
 |---|---|
-| [mixumOS](https://github.com/ashreo/mixumOS) | The system base: Arch-based agent OS distribution with container/VM runtime (`mixum-agentd`, `mixcomp`). The reference MAP **Node** implementation. |
+| [mixumOS](https://github.com/EmergeShift/mixumOS) | The system base: Arch-based agent OS distribution with container/VM runtime (`mixum-agentd`, `mixcomp`). The reference MAP **Node** implementation. |
 | **Mixum Agent Protocol** (this repo) | The contract: normative spec, JSON Schemas, conformance vectors, SDKs (TypeScript / Rust). |
-| [Mixum Agent Env (MixumART)](https://github.com/ashreo/mixum-Agent-Env) | Desktop GUI and companion environment for macOS / Windows / Linux: VM lifecycle management, agent platform connectors. A reference MAP **Host** + **Client** implementation. |
+| [Mixum Agent Env (MixumART)](https://github.com/EmergeShift/MixumART) | Desktop GUI and companion environment for macOS / Windows / Linux: VM lifecycle management, agent platform connectors. A reference MAP **Host** + **Client** implementation. |
 
 ## Design principles
 

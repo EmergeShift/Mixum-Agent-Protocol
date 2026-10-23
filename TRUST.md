@@ -12,8 +12,8 @@ adopting it does not create a new surveillance or lock-in surface. This page is
 the contract behind that claim.
 
 **Scope:** these commitments bind the Mixum project's repositories
-([mixumOS](https://github.com/ashreo/mixumOS), Mixum Agent Protocol (this repo),
-[MixumART](https://github.com/ashreo/mixum-Agent-Env)) and any service Mixum
+([mixumOS](https://github.com/EmergeShift/mixumOS), Mixum Agent Protocol (this repo),
+[MixumART](https://github.com/EmergeShift/MixumART)) and any service Mixum
 operates. Third parties building on MAP set their own policies; the conformance
 program (see [Versioning & Governance](site/src/content/docs/spec/versioning-governance.md))
 is how they demonstrate comparable behavior.

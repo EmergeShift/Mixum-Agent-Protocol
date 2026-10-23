@@ -86,4 +86,4 @@ The runner starts the agent with a minimal environment (no inherited shell histo
 
 ## Conformance
 
-Bridge conformance = the message round-trip vectors in [`vectors/`](https://github.com/ashreo/Mixum-Agent-Protocol/tree/main/vectors): a scripted agent + a scripted runner must complete a full session (hello → exec round-trip → input.request/response → done) byte-for-byte modulo ULIDs and timestamps.
+Bridge conformance = the message round-trip vectors in [`vectors/`](https://github.com/EmergeShift/Mixum-Agent-Protocol/tree/main/vectors): a scripted agent + a scripted runner must complete a full session (hello → exec round-trip → input.request/response → done) byte-for-byte modulo ULIDs and timestamps.

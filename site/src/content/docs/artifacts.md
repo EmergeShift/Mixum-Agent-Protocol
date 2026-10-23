@@ -7,7 +7,7 @@ The prose spec is normative for humans; these artifacts are normative for machin
 
 ## JSON Schemas
 
-Control-plane payloads are locked by JSON Schema (draft 2020-12) in [`schemas/`](https://github.com/ashreo/Mixum-Agent-Protocol/tree/main/schemas):
+Control-plane payloads are locked by JSON Schema (draft 2020-12) in [`schemas/`](https://github.com/EmergeShift/Mixum-Agent-Protocol/tree/main/schemas):
 
 | Schema | Locks |
 |---|---|
@@ -24,7 +24,7 @@ Binary layouts (video frame header, chunk records, stdio records) are byte-exact
 
 ## Conformance vectors
 
-Structural vectors live in [`vectors/`](https://github.com/ashreo/Mixum-Agent-Protocol/tree/main/vectors) and are language-neutral: a conformant implementation must accept every `valid` case and reject every `invalid` case with the stated error code.
+Structural vectors live in [`vectors/`](https://github.com/EmergeShift/Mixum-Agent-Protocol/tree/main/vectors) and are language-neutral: a conformant implementation must accept every `valid` case and reject every `invalid` case with the stated error code.
 
 | Vector set | Scope |
 |---|---|

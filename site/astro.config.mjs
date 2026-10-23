@@ -12,7 +12,7 @@ export default defineConfig({
         {
           icon: 'github',
           label: 'GitHub',
-          href: 'https://github.com/ashreo/Mixum-Agent-Protocol',
+          href: 'https://github.com/EmergeShift/Mixum-Agent-Protocol',
         },
       ],
       locales: {
