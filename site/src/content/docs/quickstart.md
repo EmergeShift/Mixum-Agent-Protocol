@@ -10,8 +10,9 @@ Two roles, ten minutes: run a **Node** (the mixumOS reference runtime), then dri
 The fastest Node is a mixumOS container (Linux, or a VM on macOS/Windows via a MAP Host):
 
 ```bash
-# reference runtime image (see mixumOS docs for builds and the Host-based flow)
-docker run -d --name map-node -p 7601:7601 ghcr.io/ashreo/mixumos-node:latest
+# reference runtime image; build it from the mixumOS checkout with `make dist`
+# if the published image is not available in your environment
+docker run -d --name map-node -p 7601:7601 ghcr.io/mixumos/mixumos:latest
 ```
 
 First start generates a Node identity and a **bootstrap admin token** — it is printed once (or mounted from a secret). Keep it for step 3.
