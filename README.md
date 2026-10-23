@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="brand/app-icon.svg" alt="MAP" width="72">
+  <img src="brand/svg/app-icon.svg" alt="MAP" width="72">
   <h1>Mixum Agent Protocol</h1>
   <h3>MCP gave agents a way to call tools. We think environments deserve a contract too — this is our draft.</h3>
   <p>An open protocol that connects AI agents to isolated, snapshot-capable computing environments —<br/>the machine an agent lives in — across macOS, Windows, Linux, local laptops and cloud.</p>
@@ -229,14 +229,14 @@ MAP streams each window independently — clients attach per window, never to a 
   "height": 800,
   "focused": false,
   "mode": "agent",
-  "codec": "h264"
+  "codec": "png"
 }
 ```
 
 - `mode` is the takeover state: `agent` (task-owned, watch-only), `user` (claimed by a client), `free`.
-- `jpeg` is mandatory for every MAP-Display implementation; `h264` is optional and negotiated. The attach reply's `codec` is authoritative; a Node without an encoder silently serves JPEG.
+- `jpeg` is the mandatory baseline for interoperability; `h264` is optional and negotiated. The attach reply's `codec` is authoritative; a Node without an encoder silently serves JPEG.
 - Every video record carries a 27-byte header with window id, size, flags and **cursor position**, so the pointer is always consistent with the frame it came from.
-- `codec: "png"` adds lossless, damage-based patches for local/LAN viewers. It is **Experimental** in v1: first frame full, then bounding-box patches, with a cursor-only format that does not touch the image.
+- `png` is the codec both reference implementations actually use for local/LAN. It sends a full frame first, then only the bounding box of changed pixels, plus cursor-only frames with no image. It is implemented end to end, but it is **not yet a conformance requirement** — a third-party Node may fall back to JPEG, and the attach reply's `codec` is authoritative.
 - Input injection into an `agent` window replies `conflict`; claim it first. The takeover state machine forwards `suspend` to the agent and `resume` on release.
 
 ## Security model
@@ -337,7 +337,7 @@ The `@mixum/map` npm package is not published during the skeleton phase.
 | [MixumART](https://github.com/EmergeShift/MixumART) | Desktop runtime manager, CLI, MCP; reference **Host** + Client | Host + Core client (reference; `vm.*` surface maturing); Rust + Tauri |
 | **This repository** | Specification, JSON Schemas, vectors, TypeScript/Rust SDKs | — |
 
-The reference Node's control plane is Rust end to end: tokio, `rustls`, `ed25519-dalek`, `zstd`, `sled`, a content-addressed snapshot engine and a CRIU driver. The compositor is C on wlroots, because that is where the Wayland ecosystem lives. That split matters for a protocol that parses untrusted manifests and moves multi-gigabyte trees — memory safety at the boundary is a feature of the contract, not an implementation detail.
+The reference Node's control plane is Rust end to end: tokio, `rustls`, `ed25519-dalek`, `zstd`, `sled`, a content-addressed snapshot engine and a CRIU driver. The Node ships `mixcomp`, a C compositor on wlroots, because that is where the Wayland ecosystem lives. MixumART also ships an optional Rust/Smithay compositor (`mixum-env-compositor`) that connects to the same display broker; it is a second implementation of the same private channel, not a second protocol. That split matters for a protocol that parses untrusted manifests and moves multi-gigabyte trees — memory safety at the boundary is a feature of the contract, not an implementation detail.
 
 ## Repository map
 

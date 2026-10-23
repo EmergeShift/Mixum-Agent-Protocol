@@ -18,7 +18,7 @@ MAP streams the GUI of the sandbox to any client. Each window is captured indepe
   "height": 800,
   "focused": false,
   "mode": "agent",
-  "codec": "h264"
+  "codec": "png"
 }
 ```
 
@@ -29,13 +29,15 @@ MAP streams the GUI of the sandbox to any client. Each window is captured indepe
 | Op | Request | Reply |
 |---|---|---|
 | `display.list` | — | `{ windows: [Window] }` |
-| `display.attach` | `{ window, fps?, codec?: "jpeg"\|"h264" }` | `{ window, codec, width, height, fps }` — **codec is the negotiated one**, video frames follow on the binary channel |
+| `display.attach` | `{ window, fps?, codec?: "jpeg"\|"h264"\|"png", quality?: 1–100 }` | `{ window, codec, width, height, fps }` — **codec is the negotiated one**, video frames follow on the binary channel |
 | `display.detach` | `{ window }` | `{ window }` |
 | `display.windows` | — | `{ subscribed }` — pushes window add/remove/rename/codec-change events |
 | `display.input` | `{ window, type, … }` | `{ ok: true }` |
 | `display.takeover` | `{ window, action: "claim"\|"release", force? }` | `{ mode }` |
 
-**Codec negotiation.** `jpeg` is mandatory for every MAP-Display implementation; `h264` is optional. A client requesting `h264` from a Node without an encoder silently gets `jpeg` — the attach reply's `codec` field is authoritative, and a codec change is broadcast on the window subscription so all attached clients reconfigure. JPEG frames are byte-identical full frames; H.264 payloads are **Annex-B** with the same frame header (`flags` bit0 = keyframe/IDR): on attach the Node sends an IDR immediately, then at least one IDR every 2 seconds.
+**Codec negotiation.** `jpeg` is the mandatory baseline for interoperability; `h264` is optional. A client requesting `h264` from a Node without an encoder silently gets `jpeg` — the attach reply's `codec` field is authoritative, and a codec change is broadcast on the window subscription so all attached clients reconfigure. JPEG frames are byte-identical full frames; H.264 payloads are **Annex-B** with the same frame header (`flags` bit0 = keyframe/IDR): on attach the Node sends an IDR immediately, then at least one IDR every 2 seconds.
+
+`png` is the lossless damage codec used by mixumOS and MixumART for local/LAN viewers. It is implemented end to end by both reference implementations, but it is not yet part of the conformance suite; a third-party Node may fall back to JPEG. Clients must honor the `codec` in the attach reply.
 
 ## Window frame header
 
@@ -52,7 +54,7 @@ Little-endian, prefixed to every video record:
 [21:23]  i16  cursorY
 [23:25]  u16  cursorW             cursor draw area
 [25:27]  u16  cursorH
-[27:]    —    encoded frame (v1: JPEG; or H.264 Annex-B when negotiated)
+[27:]    —    encoded frame (JPEG; H.264 Annex-B when negotiated; PNG or PNG patch when `codec: "png"`)
 ```
 
 Design notes: every JPEG frame is a keyframe, so clients can join mid-stream at any frame. The cursor position rides in the header — clients draw it over the canvas, so the pointer is always consistent with the frame it came from, never extrapolated.
@@ -89,3 +91,34 @@ Injection into a window in `mode: "agent"` replies `conflict` — claim it first
 
 The record-framed channel between the Node and its compositor (`mixumd` ↔ `mixcomp` in mixumOS) is **private**, but its evolution follows the same additive rule as the public protocol: record types evolve incrementally, and a receiver **must ignore unknown record types** (logging/counting them is encouraged) instead of closing the connection. Framing or payload validation failures are a separate, explicit error path and may terminate the channel. This rule is a minor clarification (2026-10); it does not change any wire layout.
 
+
+## Damage patches (PNG)
+
+`codec: "png"` negotiates a lossless, damage-based window stream for local/LAN
+viewers. The binary `video` channel keeps the 27-byte frame header; when
+`flags` bit2 is set the payload starts with a 20-byte little-endian patch
+header, followed by the encoded patch:
+
+```
+[27:31]   u32 x
+[31:35]   u32 y
+[35:39]   u32 w
+[39:43]   u32 h
+[43:47]   u32 format      0 = cursor-only (no image), 2 = PNG
+[47:...]  PNG bytes (w*h)
+```
+
+Semantics:
+
+- The first frame after attach, and any frame after a size change, is a full
+  frame (`flags` bit2 clear) with the window's complete PNG.
+- Subsequent frames carry only the bounding box of changed pixels; a frame
+  with no changes is omitted. `format: 0` updates the cursor overlay without
+  touching the image.
+- The host composites patches onto its last full frame; it must not clear or
+  resize the canvas for a patch. Patches are ordered and must not be dropped.
+- `quality` applies to lossy codecs (`jpeg`); PNG ignores it. A Node may
+  clamp or ignore it.
+- Conformance status: **implemented and exercised by both reference
+  implementations, but not yet part of the conformance suite**. A future RFC
+  may formalize the patch header and add damage-region lists.

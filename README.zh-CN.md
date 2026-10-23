@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="brand/app-icon.svg" alt="MAP" width="72">
+  <img src="brand/svg/app-icon.svg" alt="MAP" width="72">
   <h1>Mixum Agent Protocol</h1>
   <h3>MCP 让 agent 学会了调用工具。我们认为“环境”也需要一份契约——这是我们的草稿。</h3>
   <p>一个开放协议，把 AI agent 接到隔离、可快照的计算环境——<br/>agent 生活的那台机器——横跨 macOS、Windows、Linux、本地笔记本与云端。</p>
@@ -224,14 +224,14 @@ MAP 逐窗口推流——客户端按窗口 attach，而不是订阅整块屏幕
   "height": 800,
   "focused": false,
   "mode": "agent",
-  "codec": "h264"
+  "codec": "png"
 }
 ```
 
 - `mode` 是接管状态：`agent`（任务持有，只读）、`user`（客户端已认领）、`free`。
-- 每个 MAP-Display 实现必须支持 `jpeg`；`h264` 可选并协商。attach 回复里的 `codec` 是权威结果；没有编码器的 Node 会静默降级为 JPEG。
+- `jpeg` 是互通必须支持的基础编码；`h264` 可选并协商。attach 回复里的 `codec` 是权威结果；没有编码器的 Node 会静默降级为 JPEG。
 - 每个视频记录带 27 字节头：窗口 id、尺寸、flags 和**光标位置**，因此指针永远与它所属的那一帧一致。
-- `codec: "png"` 为本地/局域网观看者增加无损损伤补丁。它在 v1 中是 **Experimental**：首帧全量，之后只发脏区包围盒；cursor-only 格式只更新光标，不动图像。
+- `png` 是两个参考实现实际在用的本地/局域网编码：首帧全量，之后只发脏区包围盒；cursor-only 帧只更新光标，不动图像。它已经端到端跑通，但**还不是一致性要求**——第三方 Node 可以回退到 JPEG，以 attach 回复的 `codec` 为准。
 - 向 `agent` 窗口注入输入会返回 `conflict`，必须先 claim。接管状态机会向 agent 转发 `suspend`，释放时转发 `resume`。
 
 ## 安全模型
