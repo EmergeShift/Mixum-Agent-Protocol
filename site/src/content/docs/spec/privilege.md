@@ -25,7 +25,7 @@ The Node pushes to every connected session with the `admin` capability:
     "peerUid": 0,
     "program": "npm",
     "resolved": "/usr/bin/npm",
-    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "sha256": "eec3baf7cedb1f0b0f9570b18b78ee0b87eb3ea1ce9389062b1b4b6d353db87b",
     "args": ["install", "-g", "typescript"],
     "cwd": "/var/lib/mixum/work",
     "reason": "install the project toolchain",
@@ -35,6 +35,10 @@ The Node pushes to every connected session with the `admin` capability:
   }
 }
 ```
+
+The `sha256` in this example is an illustrative placeholder (the SHA-256 of a
+sample byte string), not the hash of any host's `/usr/bin/npm`. Real request
+events must pin the bytes of the resolved executable.
 
 - `program` is the exact argv[0] the agent asked for. `resolved` is the absolute,
   symlink-free executable that will actually run, and `sha256` pins its bytes.
