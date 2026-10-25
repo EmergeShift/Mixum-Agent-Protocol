@@ -1,0 +1,94 @@
+{
+  "$comment": "Clipboard extension vectors (RFC 0004). valid[] must validate against display-clipboard.schema.json; invalid[] must be rejected with the stated code. The 4 MiB UTF-8 byte limit, ACL/agent-mode checks and the no-replay rule are dispatch/state-machine behavior, not schema behavior; the schema's maxLength is only a code-point upper bound.",
+  "schema": "../schemas/display-clipboard.schema.json",
+  "valid": [
+    {
+      "name": "set ASCII text",
+      "kind": "set",
+      "document": { "window": 7, "text": "hello" }
+    },
+    {
+      "name": "set non-ASCII UTF-8 text",
+      "kind": "set",
+      "document": { "window": 7, "text": "你好，剪贴板" }
+    },
+    {
+      "name": "changed event payload",
+      "kind": "changed",
+      "document": { "window": 7, "text": "copied in the sandbox" }
+    },
+    {
+      "name": "legacy pull reply",
+      "kind": "pullReply",
+      "document": { "text": "current B-compositor selection" }
+    },
+    {
+      "name": "empty legacy pull reply",
+      "kind": "pullReply",
+      "document": { "text": "" }
+    },
+    {
+      "name": "unknown future field is ignored",
+      "kind": "set",
+      "document": { "window": 7, "text": "hello", "futureHint": true }
+    }
+  ],
+  "invalid": [
+    {
+      "name": "payload without text",
+      "document": { "window": 7 },
+      "code": "bad_request"
+    },
+    {
+      "name": "empty set text",
+      "document": { "window": 7, "text": "" },
+      "code": "bad_request"
+    },
+    {
+      "name": "window below u32",
+      "document": { "window": -1, "text": "hello" },
+      "code": "bad_request"
+    },
+    {
+      "name": "window above u32",
+      "document": { "window": 4294967296, "text": "hello" },
+      "code": "bad_request"
+    },
+    {
+      "name": "window is fractional",
+      "document": { "window": 7.5, "text": "hello" },
+      "code": "bad_request"
+    },
+    {
+      "name": "text is not a string",
+      "document": { "window": 7, "text": 42 },
+      "code": "bad_request"
+    },
+    {
+      "name": "pull reply without text",
+      "document": {},
+      "code": "bad_request"
+    },
+    {
+      "name": "set without window is rejected by dispatch",
+      "kind": "set",
+      "semantic": true,
+      "$comment": "The payload is a valid pull-reply shape, but display.clipboard.set requires window; a Node must reject it with bad_request.",
+      "document": { "text": "hello" },
+      "code": "bad_request"
+    }
+  ],
+  "flow": [
+    {
+      "name": "set routes to the owner; changed is ACL-filtered; agent mode conflicts",
+      "request": { "window": 7, "text": "hello" },
+      "expect": {
+        "reply": { "ok": true },
+        "changed": { "window": 7, "text": "hello" },
+        "delivery": "sessions subscribed to display.windows whose token window ACL covers 7",
+        "agentMode": "conflict",
+        "replay": "omitted from session.resume"
+      }
+    }
+  ]
+}
