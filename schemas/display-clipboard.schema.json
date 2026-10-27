@@ -24,7 +24,7 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 4194304,
-          "description": "UTF-8 clipboard text. Empty text is rejected by display.clipboard.set; changed events over 4 MiB of UTF-8 bytes are discarded as a whole."
+          "description": "UTF-8 clipboard text. Empty text is rejected by display.clipboard.set, and v1 never emits a changed event for an empty selection; changed events over 4 MiB of UTF-8 bytes are discarded as a whole. maxLength counts code points; the normative 4 MiB limit is UTF-8 bytes, enforced at dispatch level."
         }
       }
     },

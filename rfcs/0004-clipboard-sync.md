@@ -14,7 +14,8 @@ Add a window-scoped, bidirectional text clipboard to MAP-Display:
 - `display.clipboard.set` — a client writes text into the selection of the
   compositor that owns a window;
 - `display.clipboard.changed` — the Node pushes the new text when the selection
-  owned by that window changes;
+  owned by that window changes, delivered only to connections that explicitly
+  subscribe;
 - `display.clipboard` — the existing read-only pull from the B compositor stays
   as a compatibility path.
 
@@ -46,6 +47,7 @@ vendor-neutral MAP contract.
 | Op | Request | Reply |
 |---|---|---|
 | `display.clipboard.set` | `{ window, text }` | `{ ok: true }` |
+| `display.clipboard.subscribe` | — | `{ subscribed: true }` |
 | `display.clipboard` | — | `{ text }` |
 | `display.clipboard.changed` | server push, payload `{ window, text }` | — |
 
@@ -77,9 +79,15 @@ vendor-neutral MAP contract.
   { "window": 7, "text": "hello" }
   ```
 
-- Delivery requires a `display.windows` subscription **and**, when the token
-  carries a `windows` claim, a claim that covers `window`. `display.view` alone
-  is not sufficient: clipboard content is more sensitive than window imagery.
+- Delivery requires an explicit `display.clipboard.subscribe` on the
+  connection. A `display.windows` subscription alone **MUST NOT** opt a client
+  into clipboard text: watching window metadata is not consent for clipboard
+  content. `subscribe` requires the `display.view` capability; events are then
+  still filtered per window by the token's `windows` claim (when present).
+- The subscribe state is not restored by `session.resume`; clients re-issue it
+  after resuming. Changed events are never replayed (see below).
+- v1 synchronizes **non-empty text only**: clearing a selection does not emit
+  a `changed` event (an explicit `clear` op is a future topic).
 - The event is not delivered to a compositor or a client that has not passed
   the window ACL check.
 - `text` is UTF-8 and at most 4 MiB. Content over the limit is truncated and

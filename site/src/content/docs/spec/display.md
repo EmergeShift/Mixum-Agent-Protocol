@@ -35,6 +35,7 @@ MAP streams the GUI of the sandbox to any client. Each window is captured indepe
 | `display.input` | `{ window, type, … }` | `{ ok: true }` |
 | `display.takeover` | `{ window, action: "claim"\|"release", force? }` | `{ mode }` |
 | `display.clipboard.set` | `{ window, text }` | `{ ok: true }` |
+| `display.clipboard.subscribe` | — | `{ subscribed: true }` — opts the connection into `display.clipboard.changed` |
 | `display.clipboard` | — | `{ text }` — read-only pull from the B compositor (compatibility) |
 
 **Codec negotiation.** `jpeg` is the mandatory baseline for interoperability; `h264` is optional. A client requesting `h264` from a Node without an encoder silently gets `jpeg` — the attach reply's `codec` field is authoritative, and a codec change is broadcast on the window subscription so all attached clients reconfigure. JPEG frames are byte-identical full frames; H.264 payloads are **Annex-B** with the same frame header (`flags` bit0 = keyframe/IDR): on attach the Node sends an IDR immediately, then at least one IDR every 2 seconds.
@@ -98,14 +99,18 @@ compositor that owns `window`:
   that the application has read it.
 
 `display.clipboard.changed { window, text }` is pushed when the selection owned
-by `window` changes. It is delivered only to sessions that subscribed to
-`display.windows` **and**, when the token carries a `windows` claim, whose
-claim covers `window`; `display.view` alone is not enough. Content over 4 MiB is truncated and
-discarded as a whole. The event carries no compositor id, and it is
-**not replayed** by `session.resume` because clipboard text is sensitive and
-may be stale after a reconnect. Clients **SHOULD** suppress echo: a changed
-event equal to the last text they set for that window should not be written
-back to the host clipboard.
+by `window` changes. Delivery requires an explicit `display.clipboard.subscribe`
+(requires `display.view`); a `display.windows` subscription alone does **not**
+opt a client into clipboard text — watching window metadata is not consent for
+clipboard content. Subscribe state is not restored by `session.resume` and
+events are never replayed. Events are still filtered per window by the token's
+`windows` claim. v1 synchronizes **non-empty text only**: clearing a selection
+does not emit a changed event. Content over 4 MiB of UTF-8 bytes is truncated
+and discarded as a whole; the byte limit is enforced at dispatch level
+(`vectors/clipboard/byte-limit.json` carries a multi-byte over-limit case that
+passes the schema and must be rejected). The event carries no compositor id.
+Clients **SHOULD** suppress echo: a changed event equal to the last text they
+set for that window should not be written back to the host clipboard.
 
 The legacy `display.clipboard` pull is unchanged: read-only, best-effort from
 the B compositor, no window routing or ACL, no change notification. Clients
