@@ -76,17 +76,26 @@ pub struct TokenClaims {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
 pub enum Capability {
+    #[serde(rename = "task.run")]
     TaskRun,
+    #[serde(rename = "task.observe")]
     TaskObserve,
+    #[serde(rename = "snap.manage")]
     SnapManage,
+    #[serde(rename = "snap.sync")]
     SnapSync,
+    #[serde(rename = "display.view")]
     DisplayView,
+    #[serde(rename = "display.input")]
     DisplayInput,
+    #[serde(rename = "mem.read")]
     MemRead,
+    #[serde(rename = "mem.write")]
     MemWrite,
+    #[serde(rename = "vm.manage")]
     VmManage,
+    #[serde(rename = "admin")]
     Admin,
 }
 
