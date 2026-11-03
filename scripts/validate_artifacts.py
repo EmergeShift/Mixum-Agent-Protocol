@@ -19,6 +19,7 @@ import sys
 from pathlib import Path
 
 from jsonschema import Draft202012Validator
+from referencing import Registry, Resource
 
 ROOT = Path(__file__).resolve().parents[1]
 SCHEMAS = ROOT / "schemas"
@@ -48,7 +49,14 @@ def document_of(case: dict):
 
 
 def check_schemas() -> dict[Path, Draft202012Validator]:
-    validators: dict[Path, Draft202012Validator] = {}
+    """Load every schema, then build one registry so cross-file $refs stay local.
+
+    `token.schema.json` points at `envelope.schema.json#/$defs/ulid`. Without a
+    registry that $ref resolves against the hosted $id over the network, which
+    makes validation fail (or silently depend on the docs site) — the schemas in
+    this repo are the source of truth, so they are registered by $id here.
+    """
+    loaded: dict[Path, dict] = {}
     for path in sorted(SCHEMAS.glob("*.schema.json")):
         relative = path.relative_to(ROOT)
         schema = load_json(path)
@@ -66,8 +74,15 @@ def check_schemas() -> dict[Path, Draft202012Validator]:
         except Exception as error:  # jsonschema.SchemaError
             fail(f"{relative}: invalid schema: {error.message}")
             continue
-        validators[path.resolve()] = Draft202012Validator(schema)
-    return validators
+        loaded[path.resolve()] = schema
+
+    registry = Registry().with_resources(
+        (schema["$id"], Resource.from_contents(schema)) for schema in loaded.values()
+    )
+    return {
+        path: Draft202012Validator(schema, registry=registry)
+        for path, schema in loaded.items()
+    }
 
 
 def check_vector_file(

@@ -16,3 +16,8 @@ serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true
 ed25519-dalek = { version = "2", optional = true }
+
+# 生成 vectors/tokens/tokens.json；签名需要 token-verify 拉进来的 ed25519。
+[[example]]
+name = "token_vectors"
+required-features = ["token-verify"]
