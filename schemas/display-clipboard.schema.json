@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mixum-agent-protocol.dev/schemas/display-clipboard.schema.json",
+  "title": "MAP clipboard payloads",
+  "description": "Payloads for display.clipboard.set, display.clipboard.changed and the legacy display.clipboard pull reply. The envelope op selects the semantics; set and changed share the window+text shape. The 4 MiB limit is counted in UTF-8 bytes, which JSON Schema cannot express exactly; maxLength is the code-point upper bound.",
+  "oneOf": [
+    { "$ref": "#/$defs/windowText" },
+    { "$ref": "#/$defs/pullReply" }
+  ],
+  "$defs": {
+    "window": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4294967295,
+      "description": "Server-scoped u32 window id"
+    },
+    "windowText": {
+      "type": "object",
+      "required": ["window", "text"],
+      "description": "display.clipboard.set request and display.clipboard.changed event payload",
+      "properties": {
+        "window": { "$ref": "#/$defs/window" },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4194304,
+          "description": "UTF-8 clipboard text. Empty text is rejected by display.clipboard.set, and v1 never emits a changed event for an empty selection; changed events over 4 MiB of UTF-8 bytes are discarded as a whole. maxLength counts code points; the normative 4 MiB limit is UTF-8 bytes, enforced at dispatch level."
+        }
+      }
+    },
+    "pullReply": {
+      "type": "object",
+      "required": ["text"],
+      "not": { "required": ["window"] },
+      "description": "Legacy display.clipboard reply: read-only B-compositor selection, no window routing. May be empty.",
+      "properties": {
+        "text": { "type": "string" }
+      }
+    }
+  }
+}

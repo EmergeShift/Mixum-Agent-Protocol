@@ -66,8 +66,9 @@ For GUI clients that hop networks (laptop sleep, Wi-Fi → hotspot), `session.re
 
 Semantics:
 
-- The server keeps a per-session ring buffer of at least **256** envelopes pushed to that session (task events, window events, tree events — all push-direction control messages).
+- The server keeps a per-session ring buffer of at least **256** envelopes pushed to that session (task events, window events, tree events — all push-direction control messages **except clipboard events**).
 - On resume with `lastSeq`, the server replays every buffered envelope newer than `lastSeq` before any new pushes, preserving order.
+- `display.clipboard.changed` is deliberately **not replayed**: clipboard text is sensitive and may be stale. A resumed client must not treat a missing event as an empty clipboard; v1 has no per-window read, so it should wait for the next change event (or use the legacy `display.clipboard` pull where that compositor supports it).
 - Unknown/expired `sessionId` → `not_found`; the client must fall back to a full `session.hello` and re-attach.
 - Binary channels are **not** replayed. Clients re-issue `display.attach` and rely on snapshot-tree events (not chunk replay) for sync state.
 
