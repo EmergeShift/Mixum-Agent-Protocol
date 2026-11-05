@@ -49,6 +49,10 @@ jobs:
         run: cargo clippy --workspace --all-targets -- -D warnings
       - name: Test
         run: cargo test --workspace
+      # token-verify 不是默认 feature，不带它跑就完全跳过了 vectors/tokens 的
+      # 验签用例，向量等于没人执行。
+      - name: Test (token vectors)
+        run: cargo test -p map-core --features token-verify
 
   typescript:
     name: TypeScript SDK

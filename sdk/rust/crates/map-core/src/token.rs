@@ -159,3 +159,75 @@ mod tests {
             .all(|c| "0123456789ABCDEFGHJKMNPQRSTVWXYZ".contains(c)));
     }
 }
+
+/// `vectors/tokens/tokens.json` 的可执行版本：每个令牌都必须按向量声明的方式
+/// 解析/验签。向量里的公钥就是"钉"，令牌换了密钥或载荷就会在这里失败。
+#[cfg(all(test, feature = "token-verify"))]
+mod vector_tests {
+    use super::*;
+
+    fn decode_hex(value: &str) -> Vec<u8> {
+        value
+            .as_bytes()
+            .chunks(2)
+            .map(|pair| {
+                let high = (pair[0] as char).to_digit(16).expect("hex digit");
+                let low = (pair[1] as char).to_digit(16).expect("hex digit");
+                ((high << 4) | low) as u8
+            })
+            .collect()
+    }
+
+    #[test]
+    fn token_vectors_parse_and_verify() {
+        let raw = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../../../vectors/tokens/tokens.json"
+        ));
+        let vector: serde_json::Value = serde_json::from_str(raw).expect("vector is JSON");
+        let key_hex = vector["issuer"]["public_key_hex"]
+            .as_str()
+            .expect("issuer public key");
+        let key_bytes: [u8; 32] = decode_hex(key_hex).try_into().expect("32-byte ed25519 key");
+        let verifying =
+            ed25519_dalek::VerifyingKey::from_bytes(&key_bytes).expect("valid public key");
+
+        for case in vector["valid"].as_array().expect("valid cases") {
+            let name = case["name"].as_str().expect("case name");
+            let token = case["token"].as_str().expect("case token");
+            let parsed =
+                MapToken::parse(token).unwrap_or_else(|e| panic!("{name}: parse failed: {e}"));
+            parsed
+                .verify(&verifying)
+                .unwrap_or_else(|e| panic!("{name}: verify failed: {e}"));
+            let claims = serde_json::to_value(&parsed.claims).expect("claims to json");
+            assert_eq!(
+                claims, case["document"],
+                "{name}: claims differ from document"
+            );
+        }
+
+        for case in vector["invalid"].as_array().expect("invalid cases") {
+            let name = case["name"].as_str().expect("case name");
+            // 只有 schema 能拦的用例（空 caps 之类）没有令牌，交给 validate_artifacts.py。
+            let Some(token) = case["token"].as_str() else {
+                continue;
+            };
+            match case["rejects"].as_str() {
+                Some("parse") => assert!(
+                    MapToken::parse(token).is_err(),
+                    "{name}: expected the token to be rejected while parsing"
+                ),
+                Some("verify") => {
+                    let parsed = MapToken::parse(token)
+                        .unwrap_or_else(|e| panic!("{name}: should parse: {e}"));
+                    assert!(
+                        parsed.verify(&verifying).is_err(),
+                        "{name}: expected the signature check to fail"
+                    );
+                }
+                other => panic!("{name}: unknown rejects value {other:?}"),
+            }
+        }
+    }
+}
