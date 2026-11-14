@@ -1,0 +1,74 @@
+# Deploy the MAP documentation site to GitHub Pages.
+#
+# The Astro config sets:
+#   site:  https://docs.emergeshift.com
+#   base:  /map
+#
+# GitHub Pages custom-domain setup required:
+#   1. In the repo → Settings → Pages, set custom domain to "docs.emergeshift.com"
+#   2. Add a DNS CNAME:  docs.emergeshift.com → emergeshift.github.io
+#      (or the org's GitHub Pages domain)
+#   3. GitHub will create/maintain a CNAME file in the deployed branch automatically
+#
+# The base path "/map" means the built assets live under dist/ and are served
+# at https://docs.emergeshift.com/map/*.
+
+name: deploy-site
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'site/**'
+      - 'schemas/**'
+      - 'vectors/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Only one deployment at a time; skip queued runs in favour of latest.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build docs site
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+
+      - name: Install dependencies
+        working-directory: site
+        run: npm ci
+
+      - name: Build
+        working-directory: site
+        run: npm run build
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/dist
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
