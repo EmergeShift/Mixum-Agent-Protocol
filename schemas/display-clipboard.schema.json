@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://mixum-agent-protocol.dev/schemas/display-clipboard.schema.json",
+  "$id": "https://docs.emergeshift.com/map/schemas/display-clipboard.schema.json",
   "title": "MAP clipboard payloads",
   "description": "Payloads for display.clipboard.set, display.clipboard.changed and the legacy display.clipboard pull reply. The envelope op selects the semantics; set and changed share the window+text shape. The 4 MiB limit is counted in UTF-8 bytes, which JSON Schema cannot express exactly; maxLength is the code-point upper bound.",
   "oneOf": [

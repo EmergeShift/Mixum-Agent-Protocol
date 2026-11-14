@@ -5,6 +5,9 @@
   "license": "Apache-2.0",
   "type": "module",
   "scripts": {
+    "sync-artifacts": "node -e \"const fs=require('fs'); fs.cpSync('../schemas', './public/schemas', {recursive:true}); fs.cpSync('../vectors', './public/vectors', {recursive:true})\"",
+    "prebuild": "npm run sync-artifacts",
+    "predev": "npm run sync-artifacts",
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",

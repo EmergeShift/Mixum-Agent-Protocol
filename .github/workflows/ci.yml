@@ -24,9 +24,11 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install validator
-        run: pip install jsonschema==4.26.0
+        run: pip install "jsonschema==4.26.0" "pynacl>=1.5.0"
       - name: Validate schemas and vectors
         run: python scripts/validate_artifacts.py
+      - name: Run conformance test runner
+        run: python scripts/conformance_runner.py --tap
 
   rust:
     name: Rust SDK
